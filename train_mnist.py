@@ -11,13 +11,14 @@ import torch.nn.functional as F
 import torch.optim as optim
 import yaml
 
-from lib.adv_model import FGSMModel, PGDModel
-from lib.dataset_utils import load_mnist
-from lib.mnist_model import BasicModel
-from lib.utils import get_logger
+from adv.adv_model import FGSMModel, PGDModel
+from adv.dataset_utils import load_mnist
+from adv.mnist_model import BasicModel
+from adv.utils import get_logger
 
 
 def trades_loss(logits, targets, params):
+    """Compute loss for TRADES."""
     loss_natural = F.cross_entropy(logits[0], targets)
     loss_robust = F.kl_div(F.log_softmax(logits[1], dim=1),
                            F.softmax(logits[0], dim=1))

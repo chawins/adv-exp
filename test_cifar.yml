@@ -1,0 +1,36 @@
+# Config file for test_cifar.py
+
+# meta parameters
+meta:
+  exp_id: 9
+  model_name: 'cifar100_trades_exp'
+  save_path: './'
+  data_path: '~/data/'
+  seed: 2019
+  gpu_id: '4, 5'
+
+test:
+  dataset: 'cifar100'
+  network: 'wideresnet'
+  batch_size: 200
+  num_test_samples: 10000
+
+bb: False
+
+# parameters for pgd attack
+pgd:
+  plus: False  # whether to use PGD+
+  random_start: True
+  loss_func: 'ce'
+  clip: True
+  init_mode: 1
+  num_restarts: 5
+  quant: False
+
+  # parameters for AT with l-inf norm
+  p: 'inf'
+  epsilon: 0.03137254901  # 8/255
+  num_steps: 100
+  step_size: 0.002
+  # num_steps: 20
+  # step_size: 0.01

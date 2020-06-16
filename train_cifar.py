@@ -11,14 +11,15 @@ import torch.nn.functional as F
 import torch.optim as optim
 import yaml
 
-from lib.adv_model import FGSMModel, PGDModel
-from lib.cifar10_model import PreActBlock, PreActResNet
-from lib.dataset_utils import load_cifar10, load_cifar100
-from lib.utils import get_logger
-from lib.wideresnet import WideResNet
+from adv.adv_model import FGSMModel, PGDModel
+from adv.cifar10_model import PreActBlock, PreActResNet
+from adv.dataset_utils import load_cifar10, load_cifar100
+from adv.utils import get_logger
+from adv.wideresnet import WideResNet
 
 
 def trades_loss(logits, targets, params):
+    """Compute loss for TRADES."""
     loss_natural = F.cross_entropy(logits[0], targets)
     loss_robust = F.kl_div(F.log_softmax(logits[1], dim=1),
                            F.softmax(logits[0], dim=1))

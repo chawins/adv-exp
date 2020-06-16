@@ -1,3 +1,4 @@
+'''Implement PGD attack for evaluating robustness of neural networks.'''
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -102,10 +103,6 @@ class PGDAttack(object):
                 x.clamp_(0, 1)
 
             for _ in range(num_steps):
-
-                # implement BPDA for defense with quantization
-                # if quant:
-                #     x = quantize(x.detach())
 
                 # compute loss and gradients
                 x.requires_grad_()

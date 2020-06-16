@@ -1,13 +1,8 @@
 '''Simple fully-connected models'''
 
-import copy
-import random
 
-import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.distributions.normal import Normal
 
 
 class DenseModel(nn.Module):

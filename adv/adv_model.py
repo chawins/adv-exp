@@ -1,3 +1,4 @@
+'''Implement wrapper Module on Pytorch Module for adversarial training (AT).'''
 import numpy as np
 import torch
 import torch.nn as nn
@@ -26,6 +27,7 @@ class PGDModel(nn.Module):
         self.params = params
 
     def parse_params(self, params):
+        """Parse given parameters for AT."""
         p = params['p']
         step_size = params['step_size']
         epsilon = params['epsilon']
@@ -39,6 +41,7 @@ class PGDModel(nn.Module):
         return (p, step_size, epsilon, loss_func, gap, clip, rand_eps)
 
     def cal_gap(self, x, inputs, targets, params=None):
+        """Compute Frank-Wolfe optimality gap (see Wang et al. 2018)."""
         if not params:
             params = self.params
         p, _, epsilon, loss_func, _, _, _ = self.parse_params(params)
@@ -69,8 +72,10 @@ class PGDModel(nn.Module):
 
     def _compute_mask(self, x, inputs, logits, targets, grad, params,
                       is_train=True):
+        """Compute mask on samples for early stopping."""
 
         with torch.no_grad():
+            # compute specified threshold
             if params['early_stop'] and is_train:
                 softmax = F.softmax(logits.detach(), dim=1)
                 prob = torch.gather(
@@ -97,6 +102,21 @@ class PGDModel(nn.Module):
 
     def forward(self, inputs, targets, adv=True, params=None, cal_gap=False,
                 cal_gap_params=None):
+        """Forward pass for finding adversarial examples for AT.
+        There is also an option to compute Frank-Wolfe optimality gap (see
+        Wang et al. 2018 for more detail).
+
+        Args:
+            inputs (torch.tensor): input samples
+            targets (torch.tensor): ground-truth label
+            adv (bool, optional): whether to use AT
+            params (dict, optional): parameters for AT
+            cal_gap (bool, optional): whether to compute FW gap
+            cal_gap_params (dict, optional): parameters for computing FW gap
+
+        Returns:
+            logits (torch.tensor): logits output by self.basic_net
+        """
         if not adv:
             return self.basic_net(inputs)
         if params is None:
@@ -350,102 +370,6 @@ class FGSMModel(nn.Module):
             return x, c, grad
 
         self.basic_net.train(is_train)
-        return self.basic_net(x)
-
-
-# =========================================================================== #
-
-
-class PGDL2ModelSpheres(nn.Module):
-    """
-    code adapted from
-    https://github.com/karandwivedi42/adversarial/blob/master/main.py
-    """
-
-    def __init__(self, basic_net, config):
-        super(PGDL2ModelSpheres, self).__init__()
-        self.basic_net = basic_net
-        self.rand = config['random_start']
-        self.step_size = config['step_size']
-        self.epsilon = config['epsilon']
-        self.num_steps = config['num_steps']
-        self.radii = config['radii']
-        self.centers = config['centers']
-        self.loss_func = config['loss_func']
-        assert self.loss_func in ['ce', 'bce', 'hinge', 'linear', 'sigmoid'], \
-            'Only \'ce\' and \'bce\' are supported for now.'
-        self.gap = torch.tensor(config['gap']).float().cuda()
-        self.zero = torch.tensor(1e-9).cuda()
-
-    def forward(self, inputs, targets, attack=False, train=False):
-        if not attack:
-            return self.basic_net(inputs)
-
-        self.basic_net.eval()
-        x = inputs.detach()
-        tg = targets.float().unsqueeze(1)
-
-        # Add random noise to the input at the beginning if specified
-        if self.rand:
-            # x = x + torch.zeros_like(x).uniform_(-self.epsilon, self.epsilon)
-            noise = torch.zeros_like(x).normal_(
-                0, self.step_size).view(x.size(0), -1)
-            # Make sure the noise has norm at most epsilon
-            x += torch.renorm(noise, 2, 0, self.epsilon).view(x.size())
-
-        for _ in range(self.num_steps):
-            x.requires_grad_()
-            # Calculate loss
-            with torch.enable_grad():
-                logits = self.basic_net(x)
-                if self.loss_func == 'ce':
-                    loss = F.cross_entropy(logits, targets, reduction='sum')
-                elif self.loss_func == 'bce':
-                    loss = F.binary_cross_entropy_with_logits(
-                        logits, tg, reduction='sum')
-                elif self.loss_func == 'hinge':
-                    # Positive gap makes adv weaker
-                    loss = - torch.max(self.gap, (2 * tg - 1) * logits).sum()
-                elif self.loss_func == 'linear':
-                    loss = ((1 - 2 * tg) * logits).sum()
-                elif self.loss_func == 'sigmoid':
-                    f = 10 * (2 * tg - 1) * logits
-                    loss = torch.sum(1 / (1 + torch.exp(f)))
-
-            # Calculate gradients
-            grad = torch.autograd.grad(loss, x)[0].detach()
-            # Normalize gradients
-            grad_norm = torch.max(
-                grad.view(x.size(0), -1).norm(2, 1), self.zero)
-            if inputs.dim() == 4:
-                delta = self.step_size * grad / \
-                    grad_norm.view(x.size(0), 1, 1, 1)
-            else:
-                delta = self.step_size * grad / grad_norm.view(x.size(0), 1)
-
-            print(delta.norm(2, 1))
-
-            # Take PGD step
-            x = x.detach() + delta
-            # x = torch.min(torch.max(x, inputs - self.epsilon),
-            #               inputs + self.epsilon)
-            # Project back to epsilon ball (delta is redefined here to overall
-            # perturbation not a single step)
-            delta = torch.renorm((x - inputs.detach()).view(x.size(0), -1),
-                                 2, 0, self.epsilon).view(x.size())
-            x = inputs.detach() + delta
-
-            # Project the perturbed samples back to the spheres if specified
-            if self.radii is not None and self.centers is not None:
-                x -= (1 - tg) * self.centers[0]
-                x -= tg * self.centers[1]
-                x = F.normalize(x, 2, 1)
-                x *= (self.radii[0] + tg * (self.radii[1] - self.radii[0]))
-                x += (1 - tg) * self.centers[0]
-                x += tg * self.centers[1]
-
-        if train:
-            self.basic_net.train()
         return self.basic_net(x)
 
 
