@@ -1,0 +1,112 @@
+# Config file for train_cifar10.py
+
+# meta parameters
+meta:
+  exp_id: 8
+  model_name: 'cifar10_at_exp'
+  save_path: './'
+  data_path: '~/data/'
+  seed: 2019
+  gpu_id: '2, 3'    # example: '0, 2, 4, 5'
+
+# =============================== PGD parameters ============================ #
+# general parameters for training
+train:
+  dataset: 'cifar10'
+  network: 'resnet'
+  batch_size: 128
+  epochs: 100
+  learning_rate: 5.0e-2
+  l2_reg: 5.0e-4
+  # learning_rate: 1.0e-1
+  # l2_reg: 2.0e-4
+  data_aug: True
+  save_best_only: True
+  save_epochs: 1
+  lr_scheduler: 'step'  # options: null, 'step', 'cyclic'
+  pct_start: 0.5
+
+# parameters for adversarial training
+at:
+  method: 'pgd'  # options: 'pgd', 'fgsm', 'none'
+  random_start: True
+  loss_func: 'ce'    # options: 'ce', 'clipped_ce', 'hinge', 'trades'
+  use_diff_rand_eps: False
+  rand_eps: 0
+  clip: True
+  beta: 15    # for trades loss
+
+  # parameters for AT with l-inf norm
+  p: 'inf'
+  epsilon: 0.03137254901  # 8/255
+  num_steps: 10
+  step_size: 0.00784313725  # 2/255
+  # epsilon: 0.06274509803  # 16/255
+  # step_size: 0.0156862745  # 4/255
+  # epsilon: 0.03921568627    # 10/255
+  # step_size: 0.00980392156    # 2.5/255
+  # epsilon: 0.02352941176
+  # step_size: 0.00588235294
+
+  # parameters for AT with l-2 norm
+  # p: '2'
+  # epsilon: 3
+  # num_steps: 10
+  # step_size: 0.2
+
+  # parameters for ATES
+  early_stop: False    # use AT with early stop (ATES)
+  init_gap: 0    # control gap parameter
+  final_gap: 0.4
+  # step_gap: [40, 60, 80]    # options: list of ints or null
+  # linear_gap: null
+  step_gap: null
+  linear_gap: [30, 70]
+
+  # parameters for Dynamic AT
+  use_fosc: False
+  fosc_max: 0.5
+  dynamic_epoch: 80
+
+# ============================== FGSM parameters ============================ #
+# general parameters for training
+# train:
+#   dataset: 'cifar10'
+#   network: 'resnet'
+#   batch_size: 128
+#   epochs: 30
+#   learning_rate: 2.0e-1
+#   l2_reg: 5.0e-4
+#   data_aug: True
+#   save_best_only: True
+#   lr_scheduler: 'cyclic'  # options: null, 'step', 'cyclic'
+#   pct_start: 0.333333333
+#
+# # parameters for adversarial training
+# at:
+#   method: 'fgsm'  # options: 'pgd', 'fgsm'
+#   random_start: True
+#   loss_func: 'ce'
+#   use_diff_rand_eps: False
+#   rand_eps: 0
+#   clip: True
+#
+#   # parameters for AT with l-inf norm
+#   p: 'inf'
+#   epsilon: 0.03137254901  # 8/255
+#
+#   # parameters for AT with l-2 norm
+#   # p: '2'
+#   # epsilon: 3
+#   # num_steps: 10
+#   # step_size: 0.2
+#
+#   # parameters for ATES
+#   early_stop: True  # use AT with early stop (ATES)
+#   gap: 0  # control gap parameter
+#   step_gap: [5, 10, 15]
+#
+#   # parameters for Dynamic AT
+#   use_fosc: False
+#   # fosc_max: 0.5
+#   # dynamic_epoch: 80

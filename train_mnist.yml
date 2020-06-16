@@ -1,0 +1,49 @@
+# Config file for train_adv_mnist.py
+
+# meta parameters
+meta:
+  exp_id: 3
+  model_name: 'mnist_at_exp'
+  save_path: './'
+  data_path: '~/data/'
+  seed: 2020
+  gpu_id: '4, 5'
+
+# general parameters for training
+train:
+  batch_size: 128
+  epochs: 70
+  learning_rate: 1.0e-2
+  l2_reg: 5.0e-4
+  save_best_only: False
+  lr_scheduler: 'step'  # supports: null, 'step', 'cyclic'
+
+# parameters for adversarial training
+at:
+  method: 'pgd'
+  random_start: True
+  loss_func: 'trades'   # choices are 'ce', 'hinge', 'clipped_ce'
+  use_diff_rand_eps: False
+  rand_eps: 0
+  clip: True
+  beta: 200
+
+  # parameters for AT with l-inf norm
+  p: 'inf'
+  epsilon: 0.3
+  num_steps: 40
+  step_size: 0.02
+
+  # parameters for ATES
+  early_stop: False  # use AT with early stop (ATES)
+  init_gap: 0    # control gap parameter
+  final_gap: 1
+  step_gap: [30, 45, 60]    # options: list of ints or null
+  linear_gap: null
+  # step_gap: null
+  # linear_gap: [30, 70]
+
+  # parameters for Dynamic AT
+  use_fosc: False
+  fosc_max: 0.5
+  dynamic_epoch: 30
