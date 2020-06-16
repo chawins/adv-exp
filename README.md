@@ -13,16 +13,16 @@ See `environment.yml`.
 - There are multiple scripts to run the training and the testing. Main portion of code is in `./adv`.
 - The naming of the scripts is simply `SCRIPT_DATASET.py` with the YAML config file under the same name. `DATASET` includes `mnist` and `cifar` which combines both CIFAR-10 and CIFAR-100.
 - Scripts
-  - `train_DATASET.py`: main script for training AT, TRADES, Dynamic AT and ATES models. The options and hyperparameters can be set in `train_DATASET.yml`.s
+  - `train_DATASET.py`: main script for training AT, TRADES, Dynamic AT and ATES models. The options and hyperparameters can be set in `train_DATASET.yml`.
   - `test_DATASET.py`: test a trained network under one attack (PGD or BB).
 - Library
-  - `lib/adv_model.py`: wrapper Pytorch Module for AT, TRADES, Dynamic AT and ATES.
-  - `lib/pgd_attack.py`: implements PGD attack.
-  - `lib/mnist_model.py`: implements MNIST models.
-  - `lib/cifar10_model.py`: implements ResNet.
-  - `lib/wideresnet.py`: implements WideResNet.
-  - `lib/dataset_utils.py`: handles dataset loading.
-  - `lib/utils.py`: other utility functions (e.g., quantization, get logger, etc.)
+  - `adv/adv_model.py`: wrapper Pytorch Module for AT, TRADES, Dynamic AT and ATES.
+  - `adv/pgd_attack.py`: implements PGD attack.
+  - `adv/mnist_model.py`: implements MNIST models.
+  - `adv/cifar10_model.py`: implements ResNet.
+  - `adv/wideresnet.py`: implements WideResNet.
+  - `adv/dataset_utils.py`: handles dataset loading.
+  - `adv/utils.py`: other utility functions (e.g., quantization, get logger, etc.)
   
 ## Usage
 - We use YAML config files (.yml) for both training and testing.
