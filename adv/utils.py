@@ -3,6 +3,7 @@ import logging
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 
 
 def get_logger(name, logger_name=None):
@@ -45,3 +46,11 @@ def quantize(x, levels=16):
     for i in range(1, levels):
         quant += (x >= i / levels).float()
     return quant / (levels - 1)
+
+
+def trades_loss(logits, targets, params):
+    """Compute loss for TRADES."""
+    loss_natural = F.cross_entropy(logits[0], targets)
+    loss_robust = F.kl_div(F.log_softmax(logits[1], dim=1),
+                           F.softmax(logits[0], dim=1))
+    return loss_natural + params['beta'] * loss_robust

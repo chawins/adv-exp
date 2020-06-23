@@ -47,7 +47,7 @@ class PGDModel(nn.Module):
         p, _, epsilon, loss_func, _, _, _ = self.parse_params(params)
         self.basic_net.eval()
         x.requires_grad_()
-        # Calculate loss
+        # calculate loss
         with torch.enable_grad():
             logits = self.basic_net(x)
             if loss_func == 'ce':
@@ -56,7 +56,7 @@ class PGDModel(nn.Module):
                 other = best_other_class(logits, targets.unsqueeze(1))
                 loss = other - \
                     torch.gather(logits, 1, targets.unsqueeze(1)).squeeze()
-                # Positive gap creates stronger adv
+                # positive gap creates stronger adv
                 loss = torch.min(torch.zeros_like(loss), loss).sum()
         grad = torch.autograd.grad(loss, x)[0].detach().view(x.size(0), -1)
 
@@ -133,10 +133,12 @@ class PGDModel(nn.Module):
         self.basic_net.eval()
         x = inputs.clone()
 
+        # compute logits of the clean samples for TRADES
         if loss_func == 'trades':
             logits_clean = self.basic_net(inputs.detach())
             softmax_clean = F.softmax(logits_clean.detach(), dim=1)
 
+        # randomly initialize adversarial examples
         if params['random_start']:
             if p == 'inf':
                 x = x + torch.zeros_like(x).uniform_(- rand_eps, rand_eps)
@@ -150,8 +152,10 @@ class PGDModel(nn.Module):
 
             x.requires_grad_()
             with torch.enable_grad():
+                # get logits from the current samples
                 logits = self.basic_net(x)
 
+                # compute loss
                 if loss_func == 'ce' or not is_train:
                     loss = F.cross_entropy(logits, targets, reduction='sum')
                 elif loss_func == 'clipped_ce':
@@ -174,15 +178,17 @@ class PGDModel(nn.Module):
             # compute gradients
             grad = torch.autograd.grad(loss, x)[0].detach()
 
-            # compute mask for updating perturbation
+            # compute mask for updating perturbation (only used by ATES and
+            # Dynamic AT). <mask> is all ones otherwise.
             mask = self._compute_mask(
                 x, inputs, logits, targets, grad, params, is_train=is_train)
             if mask.sum() == 0:
                 break
 
-            # compute the update
+            # compute updates on the current samples
             if p == 'inf':
                 x = x.detach() + step_size * mask * torch.sign(grad)
+                # projection step to l-inf ball
                 x = torch.min(torch.max(x, inputs.detach() - epsilon),
                               inputs.detach() + epsilon)
             elif p == '2':
@@ -195,15 +201,16 @@ class PGDModel(nn.Module):
                 else:
                     delta = step_size * grad / grad_norm.view(x.size(0), 1)
 
-                # Take PGD step
+                # take PGD step
                 x = x.detach() + mask * delta
-                # Project back to epsilon ball (delta is redefined here to
+                # project back to epsilon ball (delta is redefined here to
                 # overall perturbation not a single step)
                 delta = torch.renorm((x - inputs.detach()).view(x.size(0), -1),
                                      2, 0, epsilon).view(x.size())
                 x = inputs.detach() + delta
             else:
                 raise NotImplementedError('specified lp-norm not implemented.')
+            # clip samples to [0, 1] if specified
             if clip:
                 x = torch.clamp(x, 0, 1)
 
@@ -213,6 +220,7 @@ class PGDModel(nn.Module):
             self.basic_net.train(is_train)
             return x, fosc, (x - inputs).view(x.size(0), -1).abs().max(1)[0]
 
+        # set the network to its original state (train or eval)
         self.basic_net.train(is_train)
         return self.basic_net(x)
 

@@ -7,25 +7,17 @@ import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 import yaml
 
 from adv.adv_model import FGSMModel, PGDModel
 from adv.dataset_utils import load_mnist
 from adv.mnist_model import BasicModel
-from adv.utils import get_logger
-
-
-def trades_loss(logits, targets, params):
-    """Compute loss for TRADES."""
-    loss_natural = F.cross_entropy(logits[0], targets)
-    loss_robust = F.kl_div(F.log_softmax(logits[1], dim=1),
-                           F.softmax(logits[0], dim=1))
-    return loss_natural + params['beta'] * loss_robust
+from adv.utils import get_logger, trades_loss
 
 
 def evaluate(net, dataloader, criterion, device, adv=False):
+    """Evaluate network."""
 
     net.eval()
     val_loss = 0
@@ -46,6 +38,7 @@ def evaluate(net, dataloader, criterion, device, adv=False):
 
 def train(net, trainloader, validloader, criterion, optimizer, config,
           epoch, device, log, best_acc, model_path, lr_scheduler=None):
+    """Main training function."""
 
     net.train()
     train_loss = 0
@@ -55,11 +48,14 @@ def train(net, trainloader, validloader, criterion, optimizer, config,
     for batch_idx, (inputs, targets) in enumerate(trainloader):
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
+        # Pass training samples to the adversarial model
         outputs = net(inputs, targets, params=config['at'])
         if config['at']['loss_func'] == 'trades':
+            # Compute TRADES loss
             outputs_clean = net.basic_net(inputs)
             loss = trades_loss((outputs_clean, outputs), targets, config['at'])
         else:
+            # Use cross entropy loss
             loss = criterion(outputs, targets)
         loss.backward()
         optimizer.step()
@@ -72,6 +68,7 @@ def train(net, trainloader, validloader, criterion, optimizer, config,
         train_total += 1
         train_correct += predicted.eq(targets).float().mean().item()
 
+    # Compute loss and accuracy on validation set
     adv_loss, adv_acc = evaluate(net, validloader, criterion, device, adv=True)
     val_loss, val_acc = evaluate(
         net, validloader, criterion, device, adv=False)
@@ -81,13 +78,14 @@ def train(net, trainloader, validloader, criterion, optimizer, config,
              adv_loss, adv_acc, val_loss, val_acc)
 
     # Save model weights
-    # Save model weights
     if not config['train']['save_best_only']:
+        # Save model every <save_epochs> epochs
         if epoch % config['train']['save_epochs'] == 0:
             log.info('Saving model...')
             torch.save(net.basic_net.module.state_dict(),
                        model_path + '_epoch%d.pt' % epoch)
     elif config['train']['save_best_only'] and adv_acc > best_acc:
+        # Save only the model with the highest adversarial accuracy
         log.info('Saving model...')
         torch.save(net.basic_net.module.state_dict(), model_path + '.pt')
         best_acc = adv_acc
@@ -127,16 +125,22 @@ def main():
         os.makedirs(save_dir)
     model_path = os.path.join(save_dir, model_name)
 
+    # Set up logger
     log = get_logger(model_name, 'train_mnist')
     log.info('\n%s', yaml.dump(config))
+
+    # Load dataset
     log.info('Preparing data...')
     trainloader, validloader, testloader = load_mnist(
         config['train']['batch_size'],
         data_dir=config['meta']['data_path'],
         val_size=0.1, shuffle=True, seed=seed)
 
+    # Build neural network
     log.info('Building model...')
     basic_net = BasicModel().to(device)
+
+    # Wrap the neural network with module that generates adversarial examples
     if config['at']['method'] == 'pgd' or config['at']['method'] == 'none':
         net = PGDModel(basic_net, config['at'])
     elif config['at']['method'] == 'fgsm':
@@ -144,14 +148,20 @@ def main():
     else:
         raise NotImplementedError('Specified AT method not implemented.')
 
+    # If GPU is available, allows parallel computation and cudnn speed-up
     if device == 'cuda':
         net = torch.nn.DataParallel(net)
         cudnn.benchmark = True
 
+    # Specify loss function of the network
     criterion = nn.CrossEntropyLoss()
+
+    # Set up optimizer
     optimizer = optim.SGD(
         basic_net.parameters(), lr=lr, momentum=0.9,
         weight_decay=config['train']['l2_reg'])
+
+    # Set up learning rate schedule
     if config['train']['lr_scheduler'] == 'cyclic':
         lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(
             optimizer, lr, epochs=epochs, steps_per_epoch=422,
@@ -163,16 +173,19 @@ def main():
     else:
         lr_scheduler = None
 
+    # Starting the main training loop over epochs
     log.info(' epoch | loss  , acc    | adv_l , adv_a  | val_l , val_a  |')
     best_acc = 0
     config['at']['gap'] = config['at']['init_gap']
     for epoch in range(epochs):
-        # if specified, increase "gap" in steps when using ATES
+
         if config['at']['step_gap'] is not None:
+            # Increase probability gap in steps when using ATES
             if epoch in config['at']['step_gap']:
                 config['at']['gap'] += (config['at']['final_gap']
                                         - config['at']['init_gap']) / len(config['at']['step_gap'])
         elif config['at']['linear_gap'] is not None:
+            # Increase probability gap linearly when using ATES
             lin_gap = config['at']['linear_gap']
             interval = lin_gap[1] - lin_gap[0]
             if lin_gap[0] <= epoch < lin_gap[1]:
@@ -197,9 +210,12 @@ def main():
                 epoch, device, log, best_acc, model_path,
                 lr_scheduler=lr_scheduler)
 
+    # Evaluate network on clean data
     test_loss, test_acc = evaluate(
         net, testloader, criterion, device, adv=False)
     log.info('Test loss: %.4f, Test acc: %.4f', test_loss, test_acc)
+
+    # Evaluate network on adversarial data
     test_loss, test_acc = evaluate(
         net, testloader, criterion, device, adv=True)
     log.info('Test adv loss: %.4f, Test adv acc: %.4f', test_loss, test_acc)
