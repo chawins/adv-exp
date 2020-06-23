@@ -1,49 +1,50 @@
-# Config file for train_adv_mnist.py
+# Config file for train_mnist.py
 
 # meta parameters
 meta:
-  exp_id: 3
-  model_name: 'mnist_at_exp'
-  save_path: './'
-  data_path: '~/data/'
-  seed: 2020
-  gpu_id: '4, 5'
+  exp_id: 1                     # experiment id
+  model_name: 'mnist_at_exp'    # specify model name, <exp_id> will be appended at the end
+  save_path: './'               # path to save model weights
+  data_path: '~/data/'          # path to dataset
+  seed: 2020                    # set random seed
+  gpu_id: '0'                   # set id of GPU to use (eg: '0' or '0, 1')
 
 # general parameters for training
 train:
-  batch_size: 128
-  epochs: 70
-  learning_rate: 1.0e-2
-  l2_reg: 5.0e-4
-  save_best_only: False
-  lr_scheduler: 'step'  # supports: null, 'step', 'cyclic'
+  batch_size: 128        # training and evaluation batch size
+  epochs: 70             # total number of epochs to train
+  learning_rate: 1.0e-2  # learning rate
+  l2_reg: 5.0e-4         # L2-regularization or weight decay parameter
+  save_best_only: True   # if True, only save best model
+  save_epochs: 1         # used when <save_best_only> is False. Save model every specified epochs
+  lr_scheduler: 'step'   # learning rate schedule (options: null, 'step', 'cyclic')
 
 # parameters for adversarial training
 at:
-  method: 'pgd'
-  random_start: True
-  loss_func: 'trades'   # choices are 'ce', 'hinge', 'clipped_ce'
-  use_diff_rand_eps: False
+  method: 'none'        # adversarial training method (options: 'pgd', 'fgsm', 'none' = normal training)
+  random_start: True    # if True, use random start
+  loss_func: 'ce'       # loss function for generating adversarial examples (options: 'ce', 'hinge', 'clipped_ce', 'trades')
+  use_diff_rand_eps: False    # if True, use random start with perturbation size of <rand_eps> instead of <epsilon>
   rand_eps: 0
-  clip: True
-  beta: 200
+  clip: True            # if True, clip adversarial input to [0, 1]
+  beta: 0               # TRADES parameters
 
   # parameters for AT with l-inf norm
-  p: 'inf'
-  epsilon: 0.3
-  num_steps: 40
-  step_size: 0.02
+  p: 'inf'              # specify lp-norm to use
+  epsilon: 0.3          # perturbation magnitude
+  num_steps: 40         # number of PGD steps
+  step_size: 0.02       # PGD step size
 
   # parameters for ATES
-  early_stop: False  # use AT with early stop (ATES)
-  init_gap: 0    # control gap parameter
-  final_gap: 1
-  step_gap: [30, 45, 60]    # options: list of ints or null
+  early_stop: False         # if True, use AT with early stop (ATES)
+  init_gap: 0               # initial softmax probability gap
+  final_gap: 1              # final softmax probability gap
+  step_gap: [30, 45, 60]    # specify schedule for probability gap
   linear_gap: null
   # step_gap: null
   # linear_gap: [30, 70]
 
   # parameters for Dynamic AT
-  use_fosc: False
-  fosc_max: 0.5
-  dynamic_epoch: 30
+  use_fosc: False           # if True, use Dynamic AT
+  fosc_max: 0.5             # maximum (initial) threshold for optimality gap
+  dynamic_epoch: 30         # number of epochs that threshold linearly drops to zero

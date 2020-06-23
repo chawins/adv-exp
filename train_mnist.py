@@ -81,13 +81,15 @@ def train(net, trainloader, validloader, criterion, optimizer, config,
              adv_loss, adv_acc, val_loss, val_acc)
 
     # Save model weights
+    # Save model weights
     if not config['train']['save_best_only']:
-        log.info('Saving model...')
-        torch.save(net.module.basic_net.state_dict(),
-                   model_path + '_epoch%d.pt' % epoch)
+        if epoch % config['train']['save_epochs'] == 0:
+            log.info('Saving model...')
+            torch.save(net.basic_net.module.state_dict(),
+                       model_path + '_epoch%d.pt' % epoch)
     elif config['train']['save_best_only'] and adv_acc > best_acc:
         log.info('Saving model...')
-        torch.save(net.module.basic_net.state_dict(), model_path + '.pt')
+        torch.save(net.basic_net.module.state_dict(), model_path + '.pt')
         best_acc = adv_acc
     return best_acc
 

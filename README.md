@@ -23,14 +23,17 @@ See `environment.yml`.
   - `adv/wideresnet.py`: implements WideResNet.
   - `adv/dataset_utils.py`: handles dataset loading.
   - `adv/utils.py`: other utility functions (e.g., quantization, get logger, etc.)
-  
+
 ## Usage
 - We use YAML config files (.yml) for both training and testing.
 - Training
+  - See `train_mnist.yml` for descriptions of each config parameter.
+  - Set `gpu_id` to the id of the GPU(s) you want to use. `DataParallel()` is used by default.
+  - To use normal training, set `method: 'none'`.
+  - To use adversarial training (AT) and its variants, set `method: 'pgd'` or `method: 'fgsm'` for FGSM adversarial training.
   - To use ATES, set `early_stop: True`.
   - To use TRADES, set `loss_func: 'trades'`.
   - To use Dynamic AT, set `use_fosc: True`.
-  - Other options are self-explanatory.
 - Testing
   - Only need to specify name of the model to test.
   - To use BB attack, set `bb: True` (we use the default parameters which can be changed in the test scripts).
