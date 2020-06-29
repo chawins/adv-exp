@@ -82,12 +82,12 @@ def train(net, trainloader, validloader, criterion, optimizer, config,
         # Save model every <save_epochs> epochs
         if epoch % config['train']['save_epochs'] == 0:
             log.info('Saving model...')
-            torch.save(net.basic_net.module.state_dict(),
+            torch.save(net.module.basic_net.state_dict(),
                        model_path + '_epoch%d.pt' % epoch)
     elif config['train']['save_best_only'] and adv_acc > best_acc:
         # Save only the model with the highest adversarial accuracy
         log.info('Saving model...')
-        torch.save(net.basic_net.module.state_dict(), model_path + '.pt')
+        torch.save(net.module.basic_net.state_dict(), model_path + '.pt')
         best_acc = adv_acc
     return best_acc
 
