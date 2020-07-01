@@ -46,10 +46,12 @@ class BasicModel(nn.Module):
 class BatchNormModel(nn.Module):
 
     def __init__(self, num_classes=10):
-        super(BasicModel, self).__init__()
+        super(BatchNormModel, self).__init__()
         self.conv1 = nn.Conv2d(1, 64, kernel_size=8, stride=2, padding=3)
+        self.conv1_bn = nn.BatchNorm2d(64)
         self.relu1 = nn.ReLU(inplace=True)
         self.conv2 = nn.Conv2d(64, 128, kernel_size=6, stride=2, padding=3)
+        self.conv2_bn = nn.BatchNorm2d(128)
         self.relu2 = nn.ReLU(inplace=True)
         self.conv3 = nn.Conv2d(128, 128, kernel_size=5, stride=1, padding=0)
         self.conv3_bn = nn.BatchNorm2d(128)
@@ -66,8 +68,10 @@ class BatchNormModel(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x)
+        x = self.conv1_bn(x)
         x = self.relu1(x)
         x = self.conv2(x)
+        x = self.conv2_bn(x)
         x = self.relu2(x)
         x = self.conv3(x)
         x = self.conv3_bn(x)
