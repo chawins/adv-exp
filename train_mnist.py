@@ -12,7 +12,7 @@ import yaml
 
 from adv.adv_model import FGSMModel, PGDModel
 from adv.dataset_utils import load_mnist
-from adv.mnist_model import BasicModel
+from adv.mnist_model import BasicModel, BatchNormModel
 from adv.utils import get_logger, trades_loss
 
 
@@ -138,7 +138,7 @@ def main():
 
     # Build neural network
     log.info('Building model...')
-    basic_net = BasicModel().to(device)
+    basic_net = BatchNormModel().to(device)
 
     # Wrap the neural network with module that generates adversarial examples
     if config['at']['method'] == 'pgd' or config['at']['method'] == 'none':
