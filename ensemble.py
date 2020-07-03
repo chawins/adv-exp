@@ -221,8 +221,8 @@ def main():
     return net    
 
 def ensemble():
-	models = []
-	log = get_logger("ensemble", 'train_mnist')
+    models = []
+    log = get_logger("ensemble", 'train_mnist')
 
     with open("train_mnist.yml") as stream:
         config = yaml.safe_load(stream)
@@ -267,7 +267,7 @@ def ensemble():
     config['meta']['model_name'] = config['meta']['model_name'] + '_none'
     config['meta']['seed'] = 1010
     config['at']['method'] = 'none'
-    config['train']['epochs'] = 70
+    config['train']['epochs'] = 7
     with open("train_mnist.yml", "w") as f:
         yaml.dump(config, f)
     log.info('name: %s, seed: %d, method: %s, epoch: %d', 
@@ -281,8 +281,8 @@ def ensemble():
     return models, testloader
 
 def evaluate_ensemble(models, testloader, adv):
-	criterion = nn.CrossEntropyLoss()
-	device = 'cuda'
+    criterion = nn.CrossEntropyLoss()
+    device = 'cuda'
     net.eval()
     val_loss = 0
     val_correct = 0
@@ -295,8 +295,7 @@ def evaluate_ensemble(models, testloader, adv):
             for net in models:
             	outputs = net(inputs, targets, adv=adv)
             	cur_output.append(outputs)
-        	predictions[batch_idx] = np.round(np.mean(cur_output, axis=0))
-
+                predictions[batch_idx] = np.round(np.mean(cur_output, axis=0))
             loss = criterion(predictions[batch_idx], targets)
             val_loss += loss.item()
             _, predicted = outputs.max(1)
@@ -306,7 +305,7 @@ def evaluate_ensemble(models, testloader, adv):
 
 
 if __name__ == '__main__':
-	models, testloader = ensemble()
-	predictions, test_loss, test_acc = evaluate_ensemble(models, testloader, True)
-	log.info('Test loss: %.4f, Test acc: %.4f', test_loss, test_acc)
+    models, testloader = ensemble()
+    predictions, test_loss, test_acc = evaluate_ensemble(models, testloader, True)
+    log.info('Test loss: %.4f, Test acc: %.4f', test_loss, test_acc)
     
