@@ -46,9 +46,9 @@ class BasicModel(nn.Module):
 class BatchNormModel(nn.Module):
 
     def __init__(self, num_classes=10):
-        super(BasicModel, self).__init__()
+        super(BatchNormModel, self).__init__()
         self.conv1 = nn.Conv2d(1, 64, kernel_size=8, stride=2, padding=3)
-        self.conv1_bn = nn.BatchNorm2d(128)
+        self.conv1_bn = nn.BatchNorm2d(64)
         self.relu1 = nn.ReLU(inplace=True)
         self.conv2 = nn.Conv2d(64, 128, kernel_size=6, stride=2, padding=3)
         self.conv2_bn = nn.BatchNorm2d(128)

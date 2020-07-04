@@ -12,7 +12,7 @@ import yaml
 
 from adv.adv_model import FGSMModel, PGDModel
 from adv.dataset_utils import load_mnist
-from adv.mnist_model import BasicModel
+from adv.mnist_model import BasicModel, BatchNormModel
 from adv.utils import get_logger, trades_loss
 
 
@@ -295,7 +295,7 @@ def evaluate_ensemble(models, testloader, adv):
             for net in models:
             	outputs = net(inputs, targets, adv=adv)
             	cur_output.append(outputs)
-                predictions[batch_idx] = np.round(np.mean(cur_output, axis=0))
+            predictions[batch_idx] = np.round(np.mean(cur_output, axis=0))
             loss = criterion(predictions[batch_idx], targets)
             val_loss += loss.item()
             _, predicted = outputs.max(1)
