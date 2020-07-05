@@ -227,7 +227,7 @@ def ensemble():
     with open("train_mnist.yml") as stream:
         config = yaml.safe_load(stream)
 
-    config['meta']['model_name'] = config['meta']['model_name'] + '_seed_220'
+    config['meta']['model_name'] = 'mnist_exp_at_seed220'
     config['meta']['seed'] = 220
     config['at']['method'] = 'pgd'
     with open("train_mnist.yml", "w") as f:
@@ -236,7 +236,7 @@ def ensemble():
     	config['meta']['model_name'], config['meta']['seed'], config['at']['method'], config['train']['epochs'])
     models.append(main())
 
-    config['meta']['model_name'] = config['meta']['model_name'] + '_seed_2020'
+    config['meta']['model_name'] = 'mnist_exp_at_seed2020'
     config['meta']['seed'] = 2020
     config['at']['method'] = 'pgd'
     with open("train_mnist.yml", "w") as f:
@@ -245,26 +245,26 @@ def ensemble():
     	config['meta']['model_name'], config['meta']['seed'], config['at']['method'], config['train']['epochs'])
     models.append(main())
 
-    config['meta']['model_name'] = config['meta']['model_name'] + '_seed_1000'
+    config['meta']['model_name'] = 'mnist_exp_at_seed1000_epoch7'
     config['meta']['seed'] = 1000
     config['at']['method'] = 'pgd'
-    config['train']['epochs'] = 100
+    config['train']['epochs'] = 7
     with open("train_mnist.yml", "w") as f:
         yaml.dump(config, f)
     log.info('name: %s, seed: %d, method: %s, epoch: %d', 
     	config['meta']['model_name'], config['meta']['seed'], config['at']['method'], config['train']['epochs'])
     models.append(main())
 
-    config['meta']['model_name'] = config['meta']['model_name'] + '_fgsm'
+    config['meta']['model_name'] = 'mnist_exp_at_seed1020'
     config['meta']['seed'] = 1020
-    config['at']['method'] = 'fgsm'
+    config['at']['method'] = 'pgd'
     with open("train_mnist.yml", "w") as f:
         yaml.dump(config, f)
     log.info('name: %s, seed: %d, method: %s, epoch: %d', 
     	config['meta']['model_name'], config['meta']['seed'], config['at']['method'], config['train']['epochs'])
     models.append(main())
 
-    config['meta']['model_name'] = config['meta']['model_name'] + '_none'
+    config['meta']['model_name'] = 'mnist_exp_at_seed1010_none'
     config['meta']['seed'] = 1010
     config['at']['method'] = 'none'
     config['train']['epochs'] = 7
