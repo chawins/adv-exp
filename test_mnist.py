@@ -104,7 +104,7 @@ def main():
     log.info('\n%s', yaml.dump(config))
     log.info('Preparing data...')
     (x_train, y_train), (_, _), (x_test, y_test) = load_mnist_all(
-        data_dir=config['meta']['data_path'], val_size=0.1, shuffle=False,
+        data_dir=config['meta']['data_path'], val_size=0.1, shuffle=True,
         seed=seed)
     num_classes = 10
 
