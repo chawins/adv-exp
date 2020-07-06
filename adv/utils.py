@@ -34,6 +34,14 @@ def classify(net, x, batch_size=200, num_classes=10):
             y_pred[begin:end] = net(x[begin:end].to('cuda'))
     return y_pred
 
+def majority_vote(y_preds):
+    votes = np.array([np.argmax(pred) for pred in y_preds])
+    vote_vec, count_vec = np.unique(votes, return_counts=True)
+    return vote_vec[np.argmax(count_vec)]
+
+def aggregate_vote(y_preds):
+    total_weights = np.sum(y_preds, axis=0)
+    return np.argmax(total_weights)
 
 def get_acc(y_pred, y_test):
     """Compute accuracy based on network output (logits)."""
