@@ -110,12 +110,12 @@ def main():
     log.info('Preparing data...')
     if config['test']['dataset'] == 'cifar10':
         (x_train, y_train), (_, _), (x_test, y_test) = load_cifar10_all(
-            data_dir=config['meta']['data_path'], val_size=0.1, shuffle=False,
+            data_dir=config['meta']['data_path'], val_size=0.1, shuffle=True,
             seed=seed)
         num_classes = 10
     elif config['test']['dataset'] == 'cifar100':
         (x_train, y_train), (_, _), (x_test, y_test) = load_cifar100_all(
-            data_dir=config['meta']['data_path'], val_size=0.1, shuffle=False,
+            data_dir=config['meta']['data_path'], val_size=0.1, shuffle=True,
             seed=seed)
         num_classes = 100
     else:

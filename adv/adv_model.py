@@ -311,45 +311,45 @@ class FGSMModel(nn.Module):
         with torch.enable_grad():
             logits = self.basic_net(x)
 
-        # determine step size for early stopping
-        if params['early_stop']:
-            softmax = F.softmax(logits, dim=1)
-            prob = torch.gather(
-                softmax, 1, targets.unsqueeze(1)).squeeze()
-            other = best_other_class(softmax, targets.unsqueeze(1))
-            loss = other - prob
+            # determine step size for early stopping
+            if params['early_stop']:
+                softmax = F.softmax(logits, dim=1)
+                prob = torch.gather(
+                    softmax, 1, targets.unsqueeze(1)).squeeze()
+                other = best_other_class(softmax, targets.unsqueeze(1))
+                loss = other - prob
 
-            # compute gradients
-            grad = torch.autograd.grad(loss.sum(), x)[0].detach()
+                # compute gradients
+                grad = torch.autograd.grad(loss.sum(), x)[0].detach()
 
-            delta_f = F.relu(params['gap'] - loss)
-            if p == 'inf':
-                grad_norm = grad.view(x.size(0), -1).abs().sum(1)
-            elif p == '2':
-                grad_norm = grad.view(x.size(0), -1).norm(2, 1)
-            grad_norm += 1e-9
-            step_size = delta_f / grad_norm
-            step_size = step_size.clamp(0, epsilon).view(-1, 1, 1, 1)
-        else:
-            if loss_func == 'ce':
-                loss = F.cross_entropy(logits, targets, reduction='sum')
-            elif loss_func == 'clipped_ce':
-                logsoftmax = torch.clamp(
-                    F.log_softmax(logits, dim=1), np.log(gap), 0)
-                loss = F.nll_loss(logsoftmax, targets, reduction='sum')
-            elif loss_func == 'hinge':
-                other = best_other_class(logits, targets.unsqueeze(1))
-                loss = other - \
-                    torch.gather(logits, 1, targets.unsqueeze(1)).squeeze()
-                # Positive gap creates stronger adv
-                loss = torch.min(torch.tensor(gap).cuda(), loss).sum()
+                delta_f = F.relu(params['gap'] - loss)
+                if p == 'inf':
+                    grad_norm = grad.view(x.size(0), -1).abs().sum(1)
+                elif p == '2':
+                    grad_norm = grad.view(x.size(0), -1).norm(2, 1)
+                grad_norm += 1e-9
+                step_size = delta_f / grad_norm
+                step_size = step_size.clamp(0, epsilon).view(-1, 1, 1, 1)
             else:
-                raise NotImplementedError('loss function not implemented.')
+                if loss_func == 'ce':
+                    loss = F.cross_entropy(logits, targets, reduction='sum')
+                elif loss_func == 'clipped_ce':
+                    logsoftmax = torch.clamp(
+                        F.log_softmax(logits, dim=1), np.log(gap), 0)
+                    loss = F.nll_loss(logsoftmax, targets, reduction='sum')
+                elif loss_func == 'hinge':
+                    other = best_other_class(logits, targets.unsqueeze(1))
+                    loss = other - \
+                        torch.gather(logits, 1, targets.unsqueeze(1)).squeeze()
+                    # Positive gap creates stronger adv
+                    loss = torch.min(torch.tensor(gap).cuda(), loss).sum()
+                else:
+                    raise NotImplementedError('loss function not implemented.')
 
-            # compute gradients
-            grad = torch.autograd.grad(loss, x)[0].detach()
+                # compute gradients
+                grad = torch.autograd.grad(loss, x)[0].detach()
 
-            step_size = epsilon
+                step_size = epsilon
 
         # compute the update
         if p == 'inf':
@@ -358,7 +358,8 @@ class FGSMModel(nn.Module):
                           inputs.detach() + epsilon)
         elif p == '2':
             if inputs.dim() == 4:
-                delta = step_size * grad / grad_norm.view(x.size(0), 1, 1, 1)
+                delta = step_size * grad / \
+                    grad_norm.view(x.size(0), 1, 1, 1)
             else:
                 delta = step_size * grad / grad_norm.view(x.size(0), 1)
             # Take PGD step
