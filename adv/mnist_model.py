@@ -80,6 +80,11 @@ class BatchNormModel(nn.Module):
         x = self.fc(x)
         return x
 
+class EnsembleModel(nn.Module):
+
+    def __init__(self, models):
+        self.models = models
+        self.n = len(models)
 
 class BasicModelV2(nn.Module):
 

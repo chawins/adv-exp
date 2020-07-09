@@ -23,7 +23,6 @@ def get_logger(name, logger_name=None):
     log.addHandler(fh)
     return log
 
-
 def classify(net, x, batch_size=200, num_classes=10):
     """Classify <x> with <net>."""
     with torch.no_grad():
@@ -34,14 +33,25 @@ def classify(net, x, batch_size=200, num_classes=10):
             y_pred[begin:end] = net(x[begin:end].to('cuda'))
     return y_pred
 
+def classify_ensemble(ensemble, x, batch_size=200, num_classes=10, method='aggregate_vote'):
+    with torch.no_grad():
+        y_preds = []
+        for net in ensemble.models:
+            y_pred = torch.zeros((x.size(0), num_classes)).to('cuda')
+            for i in range(int(np.ceil(x.size(0) / batch_size))):
+                begin = i * batch_size
+                end = (i + 1) * batch_size
+                y_pred[begin:end] = net(x[begin:end].to('cuda'))
+            y_preds.append(y_pred)
+        if method == 'aggregate_vote':
+            return np.sum(y_preds, axis=0)
+        else:
+            raise NotImplementedError
+
 def majority_vote(y_preds):
     votes = np.array([np.argmax(pred) for pred in y_preds])
     vote_vec, count_vec = np.unique(votes, return_counts=True)
     return vote_vec[np.argmax(count_vec)]
-
-def aggregate_vote(y_preds):
-    total_weights = np.sum(y_preds, axis=0)
-    return np.argmax(total_weights)
 
 def get_acc(y_pred, y_test):
     """Compute accuracy based on network output (logits)."""
