@@ -179,6 +179,7 @@ def main(config=None):
     config['at']['gap'] = config['at']['init_gap']
     for epoch in range(epochs):
 
+        print ('epoch: {}, acc: {}'.format(epoch, best_acc))
         if config['at']['step_gap'] is not None:
             # Increase probability gap in steps when using ATES
             if epoch in config['at']['step_gap']:
@@ -230,53 +231,53 @@ def ensemble():
             'meta': {
                 'model_name': 'mnist_exp_at_seed220',
                 'seed': 220,
-            }
+            },
             'at': {
                 'method': 'pgd',
-            }
-        }, 
+            },
+        },
         {
             'meta': {
                 'model_name': 'mnist_exp_at_seed2020',
                 'seed': 2020,
-            }
+            },
             'at': {
                 'method': 'pgd',
-            }
-        }, 
+            },
+        },
         {
             'meta': {
                 'model_name': 'mnist_exp_at_seed1000',
                 'seed': 1000,
-            }
+            },
             'at': {
                 'method': 'pgd',
-            }
-        }, 
+            },
+        },
         {
             'meta': {
                 'model_name': 'mnist_exp_at_seed1020_fgsm',
                 'seed': 1020,
-            }
+            },
             'at': {
                 'method': 'fgsm',
-            }
-        }, 
+            },
+        },
         {
             'meta': {
                 'model_name': 'mnist_exp_at_seed1010_none',
                 'seed': 1010,
-            }
+            },
             'at': {
                 'method': 'none',
-            }
+            },
         },
     ]
 
     for config_mod in config_modifications:
         with open("train_mnist.yml") as stream:
             config = yaml.safe_load(stream)
-        
+
         # For each additional field you wish to modify, add a line here
         config['meta']['model_name'] = config_mod['meta']['model_name']
         config['meta']['seed'] = config_mod['meta']['seed']
@@ -293,7 +294,7 @@ def ensemble():
     # config['at']['method'] = 'pgd'
     # with open("train_mnist.yml", "w") as f:
     #     yaml.dump(config, f)
-    # log.info('name: %s, seed: %d, method: %s, epoch: %d', 
+    # log.info('name: %s, seed: %d, method: %s, epoch: %d',
     # 	config['meta']['model_name'], config['meta']['seed'], config['at']['method'], config['train']['epochs'])
     # models.append(main())
 
