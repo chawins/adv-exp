@@ -13,6 +13,7 @@ import yaml
 from adv.adv_model import FGSMModel, PGDModel
 from adv.dataset_utils import load_mnist
 from adv.mnist_model import BasicModel, BatchNormModel
+from adv.random_model import RandModel
 from adv.utils import get_logger, trades_loss
 
 
@@ -96,7 +97,7 @@ def main():
     """Main function. Use config file train_mnist.yml"""
 
     # Parse config file
-    with open('train_mnist.yml', 'r') as stream:
+    with open('train_mnist_rand.yml', 'r') as stream:
         config = yaml.safe_load(stream)
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = config['meta']['gpu_id']
@@ -138,7 +139,7 @@ def main():
 
     # Build neural network
     log.info('Building model...')
-    basic_net = BatchNormModel().to(device)
+    basic_net = RandModel().to(device)
 
     # Wrap the neural network with module that generates adversarial examples
     if config['at']['method'] == 'pgd' or config['at']['method'] == 'none':

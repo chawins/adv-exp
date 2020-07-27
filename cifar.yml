@@ -1,0 +1,148 @@
+# Config file for test_rand.py
+
+# meta parameters
+meta:
+  exp_id: 2
+  # model_name: 'none'
+  # model_name: 'rand_colorjitter'
+  # model_name: 'rand_normal'
+  # model_name: 'rand_erase'
+  # model_name: 'rand_normal-shear-scale-rotate-translate'
+  # model_name: 'rand_normal-affine'
+  # model_name: 'pgd-rand_drop_pixel'
+  # model_name: 'pgd-rand_normal-affine'
+  # model_name: 'rand_colorjitter-motionblur-erase-shear-scale-rotate-translate'
+  # model_name: 'rand_motionblur'
+  # model_name: 'rand_rotate-motionblur-translate-colorjitter-shear-scale'
+  # model_name: 'pgd'
+  # model_name: 'pgd-rand_drop_pixel-rotate-translate-colorjitter-shear-scale'
+  # model_name: 'pgd-rand_hflip-drop_pixel-rotate-translate-colorjitter-shear-gamma-scale-grayscale'
+  # model_name: 'rand_hflip-drop_pixel-colorjitter-gamma-grayscale'
+  model_name: 'rand_hflip-normal-colorjitter-gamma-grayscale-drop_pixel-affine'
+  save_path: './'
+  data_path: '~/data/'
+  save_adv: False
+  seed: 2020
+  gpu_id: '1'
+  # dataset: 'mnist'
+  # network: 'basic'
+  dataset: 'cifar10'
+  normalize: null
+  # normalize: # CIFAR-10
+  #   mean: [0.4914, 0.4822, 0.4465]
+  #   std: [0.2023, 0.1994, 0.2010]
+  network: 'resnet'
+  val_size: 0.1
+  batch_size: 100
+  num_test_samples: 1000
+  method: 'rand'
+
+# parameters for pgd attack
+pgd:
+  plus: False  # whether to use PGD+
+  random_start: True
+  loss_func: 'ce'
+  gap: 1.0e+9
+  targeted: False
+  clip: [0., 1.]
+  init_mode: 1
+  num_restarts: 1
+  batch_size: 100
+  num_draws: 10
+  use_minimax: False
+
+  p: 'inf'
+  epsilon: 0.03137254901
+  # epsilon: 0.06274
+  num_steps: 20
+  step_size: 0.005
+  # step_size: 0.01
+  # num_steps: 100
+  # step_size: 0.001
+  # epsilon: 0.06
+  # num_steps: 20
+  # step_size: 0.006
+
+  # p: '2'
+  # epsilon: 1
+  # num_steps: 100
+  # step_size: 0.1
+
+rand:
+  seed: null
+  clip: null
+  # clip: [0., 1.]
+  num_draws: 10
+  # transforms: ['drop_pixel']
+  # transforms: ['erase']
+  # transforms: ['normal']
+  # transforms: ['uniform']
+  # transforms: ['normal', 'shear', 'scale', 'rotate', 'translate']
+  # transforms: ['normal', 'affine']
+  # transforms: ['colorjitter']
+  # transforms: ['colorjitter', 'motionblur', 'erase', 'shear', 'scale', 'rotate', 'translate']
+  # transforms: ['motionblur']
+  # transforms: ['rotate', 'motionblur', 'translate', 'colorjitter', 'shear', 'scale']
+  # transforms: ['drop_pixel', 'rotate', 'translate', 'colorjitter', 'shear', 'scale']
+  # transforms: ['hflip', 'drop_pixel', 'rotate', 'translate', 'colorjitter', 'shear', 'gamma', 'scale', 'grayscale']
+  # transforms: ['hflip', 'drop_pixel', 'colorjitter', 'gamma', 'grayscale']
+  transforms: ['medblur', 'hflip', 'normal', 'motionblur', 'colorjitter', 'gamma', 'laplacian', 'grayscale', 'drop_pixel', 'gaussblur', 'affine', 'boxblur', 'sobel']
+  affine:
+    dist: 'uniform'
+    alpha: 0.3
+  boxblur:
+    p: 0.3
+    kernel_size: 3
+  colorjitter:
+    alpha: 0.6
+  drop:
+    p: 0.3
+  drop_pixel:
+    p: 0.6
+  erase:
+    # scale: [0.1, 0.2]    # scale of area
+    scale: [0.0000001, 0.5]
+    ratio: [0.5, 2.0]    # aspect ratio of the erasing box
+  gamma:
+    dist: 'uniform'
+    alpha: 0.4
+  gaussblur:
+    p: 0.3
+    kernel_size: 3
+    sigma: 1
+  grayscale:
+    p: 0.4
+  hflip:
+    p: 0.5
+  laplacian:
+    p: 0.3
+    kernel_size: 3
+  medblur:
+    p: 0.3
+    kernel_size: 3
+  motionblur:
+    p: 0.3
+    kernel_size: 3
+    angle: 90.0
+    direction: 1.0
+  normal:
+    mean: 0.0
+    std: 0.25
+    # clip: [0., 1.]
+    clip: null
+  rotate:
+    dist: 'uniform'
+    alpha: 30
+  scale:
+    dist: 'uniform'
+    alpha: 0.3
+  shear:
+    dist: 'uniform'
+    alpha: 0.3
+  sobel:
+    p: 0.3
+  translate:
+    dist: 'uniform'
+    alpha: 0.3
+  uniform:
+    range: [-0.2, 0.2]
