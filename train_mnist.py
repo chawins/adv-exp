@@ -139,7 +139,8 @@ def main():
 
     # Build neural network
     log.info('Building model...')
-    basic_net = RandModel().to(device)
+    rand_params = config['rand']
+    basic_net = RandModel(BatchNormModel, rand_params).to(device)
 
     # Wrap the neural network with module that generates adversarial examples
     if config['at']['method'] == 'pgd' or config['at']['method'] == 'none':

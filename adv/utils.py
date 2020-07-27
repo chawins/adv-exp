@@ -4,6 +4,7 @@ import logging
 import numpy as np
 import torch
 import torch.nn.functional as F
+from kornia import color
 
 
 def get_logger(name, logger_name=None):
@@ -72,3 +73,7 @@ def trades_loss(logits, targets, params):
     loss_robust = F.kl_div(F.log_softmax(logits[1], dim=1),
                            F.softmax(logits[0], dim=1))
     return loss_natural + params['beta'] * loss_robust
+
+def normalize(inputs, params):
+    inputs = inputs.color.normalize(0.1307, 0.3081)
+    return inputs

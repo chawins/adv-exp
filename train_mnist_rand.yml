@@ -83,8 +83,8 @@ at:
 
 # ===================== parameters for random transform ===================== #
 rand:
-  seed: null
-  clip: null
+  seed: 202
+  clip: [0, 1]
   # clip: [-1., 1.]
   # clip: [0., 1.]
   num_draws: 1
