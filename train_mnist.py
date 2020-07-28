@@ -141,6 +141,7 @@ def main():
     log.info('Building model...')
     rand_params = config['rand']
     basic_net = RandModel(BatchNormModel, rand_params).to(device)
+    #basic_net = BatchNormModel().to(device)
 
     # Wrap the neural network with module that generates adversarial examples
     if config['at']['method'] == 'pgd' or config['at']['method'] == 'none':
@@ -158,9 +159,12 @@ def main():
     # Specify loss function of the network
     criterion = nn.CrossEntropyLoss()
 
+    for param in basic_net.parameters():
+        print(type(param), param.size())
+    #print(basic_net.parameters())
     # Set up optimizer
     optimizer = optim.SGD(
-        basic_net.parameters(), lr=lr, momentum=0.9,
+        basic_net.get_basic_net().parameters(), lr=lr, momentum=0.9,
         weight_decay=config['train']['l2_reg'])
 
     # Set up learning rate schedule

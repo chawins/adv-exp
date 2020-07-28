@@ -48,6 +48,7 @@ at:
   rand_eps: 0
   clip: [0., 1.]            # if True, clip adversarial input to [0, 1]
   beta: 0               # TRADES parameters
+  method: 'pgd'
 
   # parameters for AT with l-inf norm
   p: 'inf'              # specify lp-norm to use
@@ -103,7 +104,7 @@ rand:
   # transforms: ['hflip', 'drop_pixel', 'colorjitter', 'gamma', 'grayscale']
   # transforms: ['hflip', 'drop_pixel', 'colorjitter']
   # transforms: ['hflip', 'normal', 'colorjitter', 'gamma', 'grayscale', 'drop_pixel', 'affine']
-  transforms: ['medblur', 'hflip', 'normal', 'motionblur', 'colorjitter', 'gamma', 'laplacian', 'grayscale', 'drop_pixel', 'gaussblur', 'affine', 'boxblur', 'sobel']
+  transforms: ['medblur', 'hflip', 'normal', 'motionblur', 'gamma', 'laplacian', 'drop_pixel', 'gaussblur', 'affine', 'boxblur', 'sobel']
   affine:
     dist: 'uniform'
     alpha: 0.3

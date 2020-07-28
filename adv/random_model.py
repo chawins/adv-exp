@@ -26,6 +26,9 @@ class RandModel(nn.Module):
         self.basic_net = basic_net
         self.params = params
 
+    def get_basic_net(self):
+        return self.basic_net()
+
     def forward(self, inputs, rand=True, num_draws=None, params=None,
                 return_img=False):
         """
@@ -215,7 +218,7 @@ class RandModel(nn.Module):
         if params['clip'] is not None:
             x = torch.clamp(x, params['clip'][0], params['clip'][1])
 
-        outputs = self.basic_net(normalize(x, params))
+        outputs = self.basic_net().forward(normalize(x, params))
         if num_draws > 1:
             outputs = outputs.view(num_draws, batch_size, -1).permute(1, 0, 2)
         if return_img:

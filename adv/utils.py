@@ -4,7 +4,7 @@ import logging
 import numpy as np
 import torch
 import torch.nn.functional as F
-from kornia import color
+from torchvision import transforms
 
 
 def get_logger(name, logger_name=None):
@@ -75,5 +75,9 @@ def trades_loss(logits, targets, params):
     return loss_natural + params['beta'] * loss_robust
 
 def normalize(inputs, params):
-    inputs = inputs.color.normalize(0.1307, 0.3081)
+    #print(inputs.size())
+    #transform = transforms.Compose([transforms.ToPILImage(), transforms.ToTensor(), transforms.Normalize(mean=0.1307, std=0.3081)])
+    #for i in range(len(inputs)):
+    #    inputs[i] = transform(inputs[i])
+    F.normalize(inputs)
     return inputs
