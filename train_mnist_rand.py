@@ -13,6 +13,7 @@ import yaml
 from adv.adv_model import FGSMModel, PGDModel
 from adv.dataset_utils import load_mnist
 from adv.mnist_model import BasicModel, BatchNormModel
+from adv.random_model import RandModel
 from adv.utils import get_logger, trades_loss
 
 
@@ -96,7 +97,7 @@ def main():
     """Main function. Use config file train_mnist.yml"""
 
     # Parse config file
-    with open('train_mnist.yml', 'r') as stream:
+    with open('train_mnist_rand.yml', 'r') as stream:
         config = yaml.safe_load(stream)
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = config['meta']['gpu_id']
@@ -138,7 +139,9 @@ def main():
 
     # Build neural network
     log.info('Building model...')
-    basic_net = BatchNormModel().to(device)
+    rand_params = config['rand']
+    basic_net = RandModel(BatchNormModel().to(device), rand_params)
+    #basic_net = BatchNormModel().to(device)
 
     # Wrap the neural network with module that generates adversarial examples
     if config['at']['method'] == 'pgd' or config['at']['method'] == 'none':
@@ -156,9 +159,12 @@ def main():
     # Specify loss function of the network
     criterion = nn.CrossEntropyLoss()
 
+    for param in basic_net.get_basic_net().parameters():
+        print(type(param), param.size())
+    #print(basic_net.parameters())
     # Set up optimizer
     optimizer = optim.SGD(
-        basic_net.parameters(), lr=lr, momentum=0.9,
+        basic_net.get_basic_net().parameters(), lr=lr, momentum=0.9,
         weight_decay=config['train']['l2_reg'])
 
     # Set up learning rate schedule

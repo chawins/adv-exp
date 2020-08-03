@@ -14,22 +14,22 @@ meta:
   # normalize: # CIFAR-10
   #   mean: [0.4914, 0.4822, 0.4465]
   #   std: [0.2023, 0.1994, 0.2010]
-  network: 'resnet'
-  val_size: 0.1
-  batch_size: 400        # training and evaluation batch size
+  # network: 'resnet'
+  # val_size: 0.1
+  # batch_size: 400        # training and evaluation batch size
   # epochs: 70             # total number of epochs to train
   # learning_rate: 1.0e-2  # learning rate
   # l2_reg: 5.0e-4         # L2-regularization or weight decay parameter
-  epochs: 160
-  learning_rate: 5.0e-2
+  # epochs: 160
+  # learning_rate: 5.0e-2
   # learning_rate: 1.0e-1
-  l2_reg: 5.0e-4
+  # l2_reg: 5.0e-4
   # augment: True
-  augment: False
-  save_best_only: True   # if True, only save best model
-  save_epochs: 1         # used when <save_best_only> is False. Save model every specified epochs
-  lr_scheduler: 'step'   # learning rate schedule (options: null, 'step', 'cyclic')
-  method: 'pgd'         # training method (options: 'pgd', 'fgsm', 'rand', 'pgd-rand', 'none' = normal training)
+  # augment: False
+  # save_best_only: True   # if True, only save best model
+  # save_epochs: 1         # used when <save_best_only> is False. Save model every specified epochs
+  # lr_scheduler: 'step'   # learning rate schedule (options: null, 'step', 'cyclic')
+  # method: 'pgd'         # training method (options: 'pgd', 'fgsm', 'rand', 'pgd-rand', 'none' = normal training)
 
 train:
   batch_size: 128
@@ -55,7 +55,7 @@ at:
   # epsilon: 0.3          # perturbation magnitude
   # num_steps: 40         # number of PGD steps
   # step_size: 0.02       # PGD step size
-  epsilon: 0.03137254901  # 8/255
+  epsilon: 0.3  # 8/255
   num_steps: 40
   step_size: 0.02  # 2/255
 
@@ -68,7 +68,7 @@ at:
   early_stop: False         # if True, use AT with early stop (ATES)
   init_gap: 0               # initial softmax probability gap
   final_gap: 1              # final softmax probability gap
-  step_gap: [30, 45, 60]    # specify schedule for probability gap
+  # step_gap: [30, 45, 60]    # specify schedule for probability gap
   linear_gap: null
   step_gap:
   - 30
@@ -92,7 +92,7 @@ rand:
   # transforms: ['drop_pixel']
   # transforms: ['erase']
   # transforms: ['normal']
-  # transforms: ['uniform']
+  transforms: ['uniform']
   # transforms: ['normal', 'shear', 'scale', 'rotate', 'translate']
   # transforms: ['normal', 'affine']
   # transforms: ['colorjitter']
@@ -104,7 +104,7 @@ rand:
   # transforms: ['hflip', 'drop_pixel', 'colorjitter', 'gamma', 'grayscale']
   # transforms: ['hflip', 'drop_pixel', 'colorjitter']
   # transforms: ['hflip', 'normal', 'colorjitter', 'gamma', 'grayscale', 'drop_pixel', 'affine']
-  transforms: ['medblur', 'hflip', 'normal', 'motionblur', 'gamma', 'laplacian', 'drop_pixel', 'gaussblur', 'affine', 'boxblur', 'sobel']
+  # transforms: ['medblur', 'hflip', 'normal', 'motionblur', 'gamma', 'laplacian', 'drop_pixel', 'gaussblur', 'affine', 'boxblur', 'sobel']
   affine:
     dist: 'uniform'
     alpha: 0.3

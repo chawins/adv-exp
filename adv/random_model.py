@@ -27,7 +27,7 @@ class RandModel(nn.Module):
         self.params = params
 
     def get_basic_net(self):
-        return self.basic_net()
+        return self.basic_net
 
     def forward(self, inputs, rand=True, num_draws=None, params=None,
                 return_img=False):
