@@ -32,7 +32,7 @@ meta:
   # method: 'pgd'         # training method (options: 'pgd', 'fgsm', 'rand', 'pgd-rand', 'none' = normal training)
 
 train:
-  batch_size: 128
+  batch_size: 400
   epochs: 5
   l2_reg: 0.0005
   learning_rate: 0.01
@@ -49,6 +49,7 @@ at:
   clip: [0., 1.]            # if True, clip adversarial input to [0, 1]
   beta: 0               # TRADES parameters
   method: 'pgd'
+
 
   # parameters for AT with l-inf norm
   p: 'inf'              # specify lp-norm to use
