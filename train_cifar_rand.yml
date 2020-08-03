@@ -28,7 +28,7 @@ meta:
   save_best_only: True   # if True, only save best model
   save_epochs: 1         # used when <save_best_only> is False. Save model every specified epochs
   lr_scheduler: 'step'   # learning rate schedule (options: null, 'step', 'cyclic')
-  method: 'rand'         # training method (options: 'pgd', 'fgsm', 'rand', 'pgd-rand', 'none' = normal training)
+  method: 'none'         # training method (options: 'pgd', 'fgsm', 'rand', 'pgd-rand', 'none' = normal training)
 
 # =================== parameters for adversarial training =================== #
 at:

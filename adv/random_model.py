@@ -43,7 +43,7 @@ class RandModel(nn.Module):
         if params is None:
             params = self.params
         if not rand:
-            return self.basic_net(normalize(inputs, params))
+            return self.basic_net(inputs)
         if num_draws is None:
             num_draws = params['num_draws']
         if params['seed'] is not None:
@@ -218,7 +218,7 @@ class RandModel(nn.Module):
         if params['clip'] is not None:
             x = torch.clamp(x, params['clip'][0], params['clip'][1])
 
-        outputs = self.basic_net().forward(normalize(x, params))
+        outputs = self.basic_net(x)
         if num_draws > 1:
             outputs = outputs.view(num_draws, batch_size, -1).permute(1, 0, 2)
         if return_img:
