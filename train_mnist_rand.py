@@ -189,12 +189,13 @@ def main(config_file):
 
     # Load dataset
     log.info('Preparing data...')
-    (trainloader, validloader, testloader), num_classes = load_dataset(
-        config['meta'], 'train')
-    # trainloader, validloader, testloader = load_mnist(
-    #     config['train']['batch_size'],
-    #     data_dir=config['meta']['data_path'],
-    #     val_size=0.1, shuffle=True, seed=seed)
+    # Differs from Chawin's latest version (no `load_dataset`)
+    # (trainloader, validloader, testloader), num_classes = load_dataset(
+    #     config['meta'], 'train')
+    trainloader, validloader, testloader = load_mnist(
+        config['meta']['batch_size'],
+        data_dir=config['meta']['data_path'],
+        val_size=0.1, shuffle=True, seed=seed)
 
     # Build neural network
     # Differs from Chawin's latest version (no `create_model`)
