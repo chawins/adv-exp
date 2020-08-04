@@ -149,8 +149,8 @@ def main(config_file):
     model_name = config['meta']['model_name'] + str(exp_id)
 
     # Training parameters
-    epochs = config['train']['epochs']
-    lr = config['train']['learning_rate']
+    epochs = config['meta']['epochs']
+    lr = config['meta']['learning_rate']
     if config['meta']['method'] in ['rand', 'pgd-rand']:
         # Copy normalization to RandModel's params
         config['rand']['normalize'] = config['meta']['normalize']
