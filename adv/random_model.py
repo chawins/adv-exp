@@ -9,11 +9,10 @@ from kornia.augmentation import (RandomErasing, RandomGrayscale,
                                  RandomHorizontalFlip, RandomMotionBlur)
 from kornia.color.adjust import (adjust_brightness, adjust_contrast,
                                  adjust_gamma, adjust_hue, adjust_saturation)
-# from kornia.filters.blur import (box_blur, gaussian_blur2d, median_blur,
-#                                  motion_blur)
 from kornia.filters import (BoxBlur, GaussianBlur2d, Laplacian, MedianBlur,
-                            MotionBlur, Sobel)
+                            Sobel)
 
+# Differs from Chawin's latest version in file organization
 from .utils import normalize
 
 
@@ -26,11 +25,8 @@ class RandModel(nn.Module):
         self.basic_net = basic_net
         self.params = params
 
-    def get_basic_net(self):
-        return self.basic_net
-
     def forward(self, inputs, rand=True, num_draws=None, params=None,
-                return_img=False):
+                return_img=False, rule=None, temperature=None):
         """
 
         Args:
@@ -42,6 +38,7 @@ class RandModel(nn.Module):
         """
         if params is None:
             params = self.params
+        # Differ from Chawin's latest version (no `normalization`)
         if not rand:
             return self.basic_net(inputs)
         if num_draws is None:
@@ -218,9 +215,11 @@ class RandModel(nn.Module):
         if params['clip'] is not None:
             x = torch.clamp(x, params['clip'][0], params['clip'][1])
 
+        # Differ from Chawin's latest version (no `normalize`)
         outputs = self.basic_net(x)
         if num_draws > 1:
             outputs = outputs.view(num_draws, batch_size, -1).permute(1, 0, 2)
+        outputs = self.apply_decision_rule(outputs, rule, temperature)
         if return_img:
             return outputs, x
         return outputs
@@ -228,16 +227,58 @@ class RandModel(nn.Module):
     def apply_batch(self, x, temp, p, num_total):
         mask = torch.zeros(num_total, device=x.device).bernoulli_(p).view(
             num_total, 1, 1, 1)
-        return x * mask + temp * (1 - mask)
+        return x * (1 - mask) + temp * mask
 
-    def classify(self, logits):
-        if logits.dim() == 3:
+    def apply_decision_rule(self, logits, rule=None, temperature=None):
+        """
+        Apply the specified decision rule on logits (can be 2-dim or 3-dim).
+        Return (flatten) logits if rule is None or if logits has shape (N, C).
+        Otherwise, return probability distribution over classes with shape
+        (N, C).
+        """
+        if rule is None:
+            rule = self.params['rule']
+        if temperature is None:
+            temperature = self.params['temperature']
+        logits = logits.squeeze()
+
+        if rule is None or logits.dim() == 2:
+            # outputs = F.softmax(logits, dim=-1)
+            outputs = logits
+            if outputs.dim() == 3:
+                outputs = outputs.view(-1, outputs.size(-1))
+        elif rule == 'majority':
+            # NOTE: majority vote does not have gradients
             y_pred = logits.argmax(2).cpu()
             num_classes = logits.size(-1)
             y_pred = np.apply_along_axis(
                 lambda z, n=num_classes: np.bincount(z, minlength=n),
                 axis=1, arr=y_pred) / float(y_pred.size(1))
-            return torch.tensor(y_pred)
-        if logits.dim() == 2:
-            return F.softmax(logits, 1).cpu()
-        raise AssertionError('Wrong logits dimension: %d' % logits.dim())
+            outputs = torch.tensor(y_pred)
+        elif rule == 'mean_logits':
+            outputs = F.softmax(logits.mean(1) / temperature, dim=-1)
+            outputs = torch.clamp(outputs, 1e-7, 1 - 1e-7)
+        elif rule == 'mean_probs':
+            outputs = F.softmax(logits / temperature, dim=-1)
+            outputs = torch.clamp(outputs, 1e-7, 1 - 1e-7).mean(1)
+        else:
+            raise NotImplementedError('Given rule is not implemented.')
+
+        # print(outputs)
+        # if (outputs == 0).sum() > 1:
+        #     import pdb
+        #     pdb.set_trace()
+        # outputs.clamp_(1e-12, 1 - 1e-12)
+        return outputs
+
+    # def classify(self, logits):
+    #     if logits.dim() == 3:
+    #         y_pred = logits.argmax(2).cpu()
+    #         num_classes = logits.size(-1)
+    #         y_pred = np.apply_along_axis(
+    #             lambda z, n=num_classes: np.bincount(z, minlength=n),
+    #             axis=1, arr=y_pred) / float(y_pred.size(1))
+    #         return torch.tensor(y_pred)
+    #     if logits.dim() == 2:
+    #         return F.softmax(logits, 1).cpu()
+    #     raise AssertionError('Wrong logits dimension: %d' % logits.dim())
