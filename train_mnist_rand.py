@@ -64,7 +64,6 @@ def train(net, trainloader, validloader, criterion, optimizer, config,
     """Main training function."""
 
     net.train()
-    logsoftmax = False
     train_loss = 0
     train_correct = 0
     train_total = 0
@@ -73,26 +72,11 @@ def train(net, trainloader, validloader, criterion, optimizer, config,
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
         # Pass training samples to the adversarial model
-        if config['meta']['method'] == 'none':
-            outputs = net(inputs, targets, adv=False)
-        elif config['meta']['method'] == 'rand':
-            outputs = net(inputs, rand=True)
-            if config['rand']['rule'] in ['mean_probs', 'mean_logits']:
-                outputs = outputs.log()
-        elif config['meta']['method'] in ['pgd', 'fgsm', 'pgd-rand']:
-            outputs = net(inputs, targets, adv=True)
-            if (config['rand']['rule'] in ['mean_probs', 'mean_logits']
-                    and config['meta']['method'] == 'pgd-rand'):
-                outputs = outputs.log()
-                logsoftmax = True
-        else:
-            raise NotImplementedError('Specified method not implemented.')
-
+        outputs = net(inputs, targets, params=config['at'])
         if config['at']['loss_func'] == 'trades':
             # Compute TRADES loss
-            logits_clean = net.basic_net(inputs)
-            loss = trades_loss(
-                (logits_clean, outputs), targets, config['at'], logsoftmax)
+            outputs_clean = net.basic_net(inputs)
+            loss = trades_loss((outputs_clean, outputs), targets, config['at'])
         else:
             # Use cross entropy loss
             loss = criterion(outputs, targets)
@@ -108,10 +92,9 @@ def train(net, trainloader, validloader, criterion, optimizer, config,
         train_correct += predicted.eq(targets).float().mean().item()
 
     # Compute loss and accuracy on validation set
-    adv_loss, adv_acc = evaluate(
-        net, validloader, criterion, config, device, clean=False)
+    adv_loss, adv_acc = evaluate(net, validloader, criterion, device, adv=True)
     val_loss, val_acc = evaluate(
-        net, validloader, criterion, config, device, clean=True)
+        net, validloader, criterion, device, adv=False)
 
     log.info(train_correct, train_total)
 
@@ -120,21 +103,91 @@ def train(net, trainloader, validloader, criterion, optimizer, config,
              adv_loss, adv_acc, val_loss, val_acc)
 
     # Save model weights
-    if config['meta']['method'] == 'pgd-rand':
-        state_dict = net.module.basic_net.basic_net.state_dict()
-    else:
-        state_dict = net.module.basic_net.state_dict()
-    if not config['meta']['save_best_only']:
+    if not config['train']['save_best_only']:
         # Save model every <save_epochs> epochs
-        if epoch % config['meta']['save_epochs'] == 0:
+        if epoch % config['train']['save_epochs'] == 0:
             log.info('Saving model...')
-            torch.save(state_dict, model_path + '_epoch%d.pt' % epoch)
-    elif config['meta']['save_best_only'] and adv_acc > best_acc:
+            torch.save(net.module.basic_net.state_dict(),
+                       model_path + '_epoch%d.pt' % epoch)
+    elif config['train']['save_best_only'] and adv_acc > best_acc:
         # Save only the model with the highest adversarial accuracy
         log.info('Saving model...')
-        torch.save(state_dict, model_path + '.pt')
+        torch.save(net.module.basic_net.state_dict(), model_path + '.pt')
         best_acc = adv_acc
     return best_acc
+
+    # net.train()
+    # logsoftmax = False
+    # train_loss = 0
+    # train_correct = 0
+    # train_total = 0
+
+    # for batch_idx, (inputs, targets) in enumerate(trainloader):
+    #     inputs, targets = inputs.to(device), targets.to(device)
+    #     optimizer.zero_grad()
+    #     # Pass training samples to the adversarial model
+    #     if config['meta']['method'] == 'none':
+    #         outputs = net(inputs, targets, adv=False)
+    #     elif config['meta']['method'] == 'rand':
+    #         outputs = net(inputs, rand=True)
+    #         if config['rand']['rule'] in ['mean_probs', 'mean_logits']:
+    #             outputs = outputs.log()
+    #     elif config['meta']['method'] in ['pgd', 'fgsm', 'pgd-rand']:
+    #         outputs = net(inputs, targets, adv=True)
+    #         if (config['rand']['rule'] in ['mean_probs', 'mean_logits']
+    #                 and config['meta']['method'] == 'pgd-rand'):
+    #             outputs = outputs.log()
+    #             logsoftmax = True
+    #     else:
+    #         raise NotImplementedError('Specified method not implemented.')
+
+    #     if config['at']['loss_func'] == 'trades':
+    #         # Compute TRADES loss
+    #         logits_clean = net.basic_net(inputs)
+    #         loss = trades_loss(
+    #             (logits_clean, outputs), targets, config['at'], logsoftmax)
+    #     else:
+    #         # Use cross entropy loss
+    #         loss = criterion(outputs, targets)
+    #     loss.backward()
+    #     optimizer.step()
+
+    #     if lr_scheduler is not None:
+    #         lr_scheduler.step()
+
+    #     train_loss += loss.item()
+    #     _, predicted = outputs.max(1)
+    #     train_total += 1
+    #     train_correct += predicted.eq(targets).float().mean().item()
+
+    # # Compute loss and accuracy on validation set
+    # adv_loss, adv_acc = evaluate(
+    #     net, validloader, criterion, config, device, clean=False)
+    # val_loss, val_acc = evaluate(
+    #     net, validloader, criterion, config, device, clean=True)
+
+    # log.info(train_correct, train_total)
+
+    # log.info(' %5d | %.4f, %.4f | %.4f, %.4f | %.4f, %.4f | ', epoch,
+    #          train_loss / train_total, train_correct / train_total,
+    #          adv_loss, adv_acc, val_loss, val_acc)
+
+    # # Save model weights
+    # if config['meta']['method'] == 'pgd-rand':
+    #     state_dict = net.module.basic_net.basic_net.state_dict()
+    # else:
+    #     state_dict = net.module.basic_net.state_dict()
+    # if not config['meta']['save_best_only']:
+    #     # Save model every <save_epochs> epochs
+    #     if epoch % config['meta']['save_epochs'] == 0:
+    #         log.info('Saving model...')
+    #         torch.save(state_dict, model_path + '_epoch%d.pt' % epoch)
+    # elif config['meta']['save_best_only'] and adv_acc > best_acc:
+    #     # Save only the model with the highest adversarial accuracy
+    #     log.info('Saving model...')
+    #     torch.save(state_dict, model_path + '.pt')
+    #     best_acc = adv_acc
+    # return best_acc
 
 
 def main(config_file):
