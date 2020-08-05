@@ -212,6 +212,8 @@ def main(config_file):
     else:
         raise NotImplementedError('Specified AT method not implemented.')
 
+    print(device)
+
     # If GPU is available, allows parallel computation and cudnn speed-up
     if device == 'cuda':
         net = torch.nn.DataParallel(net)
@@ -227,7 +229,7 @@ def main(config_file):
     # Set up optimizer
     optimizer = optim.SGD(
         basic_net.parameters(), lr=lr, momentum=0.9,
-        weight_decay=config['train']['l2_reg'])
+        weight_decay=config['meta']['l2_reg'])
 
     # Set up learning rate schedule
     if config['meta']['lr_scheduler'] == 'cyclic':
