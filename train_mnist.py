@@ -73,6 +73,8 @@ def train(net, trainloader, validloader, criterion, optimizer, config,
     val_loss, val_acc = evaluate(
         net, validloader, criterion, device, adv=False)
 
+    log.info(train_correct, train_total)
+
     log.info(' %5d | %.4f, %.4f | %.4f, %.4f | %.4f, %.4f | ', epoch,
              train_loss / train_total, train_correct / train_total,
              adv_loss, adv_acc, val_loss, val_acc)

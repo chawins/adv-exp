@@ -25,7 +25,7 @@ meta:
   data_path: ~/data/
   exp_id: 1
   gpu_id: '0'
-  model_name: mnist_at_exp_seed_220_seed_220_seed_220
+  model_name: mnist_at_exp
   save_path: ./
   seed: 220
 train:

@@ -3,11 +3,13 @@
 # ============================= meta parameters ============================= #
 meta:
   exp_id: 1             # experiment id
-  model_name: null      # model name. If null, automatically generate it.
+  model_name: 'cifar_rand'      # model name. If null, automatically generate it.
   save_path: './'       # path to save model weights
   data_path: '~/data/'  # path to dataset
   seed: 2020            # set random seed
-  gpu_id: '7'           # set id of GPU to use (e.g., '0' or '0, 1')
+  gpu_id: '0'           # set id of GPU to use (e.g., '0' or '0, 1')
+
+train:
   dataset: 'cifar10'
   normalize: null
   # normalize: # CIFAR-10
