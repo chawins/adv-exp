@@ -92,9 +92,9 @@ def train(net, trainloader, validloader, criterion, optimizer, config,
         train_correct += predicted.eq(targets).float().mean().item()
 
     # Compute loss and accuracy on validation set
-    adv_loss, adv_acc = evaluate(net, validloader, criterion, device, adv=True)
+    adv_loss, adv_acc = evaluate(net, validloader, criterion, config, device, clean=False)
     val_loss, val_acc = evaluate(
-        net, validloader, criterion, device, adv=False)
+        net, validloader, criterion, config, device, clean=True)
 
     log.info(train_correct, train_total)
 
