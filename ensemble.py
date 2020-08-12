@@ -229,8 +229,8 @@ def ensemble():
     config_modifications = [
         {
             'meta': {
-                'model_name': 'mnist_exp_at_seed220',
-                'seed': 220,
+                'model_name': 'mnist_exp_at_seed91',
+                'seed': 91,
             },
             'at': {
                 'method': 'pgd',
@@ -238,8 +238,8 @@ def ensemble():
         },
         {
             'meta': {
-                'model_name': 'mnist_exp_at_seed2020',
-                'seed': 2020,
+                'model_name': 'mnist_exp_at_seed92',
+                'seed': 92,
             },
             'at': {
                 'method': 'pgd',
@@ -247,8 +247,8 @@ def ensemble():
         },
         {
             'meta': {
-                'model_name': 'mnist_exp_at_seed1000',
-                'seed': 1000,
+                'model_name': 'mnist_exp_at_seed93',
+                'seed': 93,
             },
             'at': {
                 'method': 'pgd',
@@ -256,20 +256,38 @@ def ensemble():
         },
         {
             'meta': {
-                'model_name': 'mnist_exp_at_seed1020_fgsm',
-                'seed': 1020,
+                'model_name': 'mnist_exp_at_seed94',
+                'seed': 94,
             },
             'at': {
-                'method': 'fgsm',
+                'method': 'pgd',
             },
         },
         {
             'meta': {
-                'model_name': 'mnist_exp_at_seed1010_none',
-                'seed': 1010,
+                'model_name': 'mnist_exp_at_seed95',
+                'seed': 95,
             },
             'at': {
-                'method': 'none',
+                'method': 'pgd',
+            },
+        },
+        {
+            'meta': {
+                'model_name': 'mnist_exp_at_seed96',
+                'seed': 96,
+            },
+            'at': {
+                'method': 'pgd',
+            },
+        },
+        {
+            'meta': {
+                'model_name': 'mnist_exp_at_seed97',
+                'seed': 97,
+            },
+            'at': {
+                'method': 'pgd',
             },
         },
     ]
