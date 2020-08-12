@@ -88,7 +88,7 @@ def train(net, trainloader, validloader, criterion, optimizer, config,
     elif config['train']['save_best_only'] and adv_acc > best_acc:
         # Save only the model with the highest adversarial accuracy
         log.info('Saving model...')
-        torch.save(net.basic_net.state_dict(), model_path + '.pt')
+        torch.save(net.module.basic_net.state_dict(), model_path + '.pt')
         best_acc = adv_acc
     return best_acc
 
@@ -119,6 +119,7 @@ def main():
     torch.manual_seed(seed)
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    print(device)
 
     # Set up model directory
     save_dir = os.path.join(config['meta']['save_path'], 'saved_models')
@@ -159,8 +160,8 @@ def main():
     # Specify loss function of the network
     criterion = nn.CrossEntropyLoss()
 
-    for param in basic_net.get_basic_net().parameters():
-        print(type(param), param.size())
+    #for param in basic_net.get_basic_net().parameters():
+        #print(type(param), param.size())
     #print(basic_net.parameters())
     # Set up optimizer
     optimizer = optim.SGD(
