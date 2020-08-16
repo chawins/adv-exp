@@ -58,6 +58,8 @@ def get_acc(y_pred, y_test):
     """Compute accuracy based on network output (logits)."""
     return (y_pred.argmax(1) == y_test.to(y_pred.device)).float().mean().item()
 
+def get_shannon_entropy(y_pred):
+    return -np.sum(y_pred * np.log2(y_pred), axis=1)
 
 def quantize(x, levels=16):
     """Quantization function from Qai et al. 2018 (CAT 2018)."""

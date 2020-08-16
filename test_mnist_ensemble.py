@@ -11,7 +11,7 @@ import yaml
 
 from adv.dataset_utils import load_mnist_all
 from adv.mnist_model import BasicModel, BatchNormModel, EnsembleModel
-from adv.utils import get_logger, trades_loss, classify, classify_ensemble, get_acc, get_logger, quantize
+from adv.utils import get_logger, trades_loss, classify, classify_ensemble, get_acc, get_shannon_entropy, get_logger, quantize
 from adv.pgd_attack import PGDAttack
 
 with open('test_mnist.yml', 'r') as stream:
@@ -53,6 +53,11 @@ def main():
             ensemble, x_test[:num_test_samples], num_classes=num_classes)
 
     acc = get_acc(y_pred, y_test[:num_test_samples])
+    entropy = get_shannon_entropy(y_pred)
+
+    log.info('Average entropy: %.4f', np.mean(entropy))
+    log.info('Min entropy: %.4f', min(entropy))
+    log.info('Max entropy: %.4f', max(entropy))
 
     log.info('Clean acc: %.4f', acc)
 

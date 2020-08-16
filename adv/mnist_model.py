@@ -93,7 +93,7 @@ class EnsembleModel(nn.Module):
         y_pred = torch.zeros((x.size(0), num_classes)).to('cuda')
         for model in self.models:
             y_pred += model(x)
-        return y_pred / 5
+        return y_pred / self.n
 
 class BasicModelV2(nn.Module):
 
