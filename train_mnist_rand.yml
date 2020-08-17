@@ -3,10 +3,10 @@
 # ============================= meta parameters ============================= #
 meta:
   exp_id: 3             # experiment id
-  model_name: 'mnist_rand'      # model name. If null, automatically generate it.
+  model_name: 'mnist_rand_82'      # model name. If null, automatically generate it.
   save_path: './random_models/'       # path to save model weights
   data_path: '~/data/'  # path to dataset
-  seed: 1424            # set random seed
+  seed: 82            # set random seed
   gpu_id: '0'           # set id of GPU to use (e.g., '0' or '0, 1')
   #exp_id: 2
   # dataset: 'cifar10'
