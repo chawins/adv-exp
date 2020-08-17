@@ -229,65 +229,65 @@ def ensemble():
     config_modifications = [
         {
             'meta': {
-                'model_name': 'mnist_exp_at_seed91',
+                'model_name': 'mnist_no_at_seed91',
                 'seed': 91,
             },
             'at': {
-                'method': 'pgd',
+                'method': 'none',
             },
         },
         {
             'meta': {
-                'model_name': 'mnist_exp_at_seed92',
+                'model_name': 'mnist_no_at_seed92',
                 'seed': 92,
             },
             'at': {
-                'method': 'pgd',
+                'method': 'none',
             },
         },
         {
             'meta': {
-                'model_name': 'mnist_exp_at_seed93',
+                'model_name': 'mnist_no_at_seed93',
                 'seed': 93,
             },
             'at': {
-                'method': 'pgd',
+                'method': 'none',
             },
         },
         {
             'meta': {
-                'model_name': 'mnist_exp_at_seed94',
+                'model_name': 'mnist_no_at_seed94',
                 'seed': 94,
             },
             'at': {
-                'method': 'pgd',
+                'method': 'none',
             },
         },
         {
             'meta': {
-                'model_name': 'mnist_exp_at_seed95',
+                'model_name': 'mnist_no_at_seed95',
                 'seed': 95,
             },
             'at': {
-                'method': 'pgd',
+                'method': 'none',
             },
         },
         {
             'meta': {
-                'model_name': 'mnist_exp_at_seed96',
+                'model_name': 'mnist_no_at_seed96',
                 'seed': 96,
             },
             'at': {
-                'method': 'pgd',
+                'method': 'none',
             },
         },
         {
             'meta': {
-                'model_name': 'mnist_exp_at_seed97',
+                'model_name': 'mnist_no_at_seed97',
                 'seed': 97,
             },
             'at': {
-                'method': 'pgd',
+                'method': 'none',
             },
         },
     ]
