@@ -40,13 +40,13 @@ def main():
         data_dir=config['meta']['data_path'], val_size=0.1, shuffle=True,
         seed=1000)
 
-    x_test, y_test = x_test[:num_test_samples], y_test[:num_test_samples]
     log = get_logger('test_mnist_ensemble', 'test_mnist')
 
     ensemble = load_ensemble_model('mnist_ensemble')
 
     num_classes = 10
     num_test_samples = config['test']['num_test_samples']
+    x_test, y_test = x_test[:num_test_samples], y_test[:num_test_samples]
     if config['pgd']['quant']:
         y_pred = classify_ensemble(ensemble, quantize(
             x_test), num_classes=num_classes)
@@ -56,6 +56,10 @@ def main():
 
     acc = get_acc(y_pred, y_test)
 
+    file_path = './test_data/PGD-ensemble.json'
+    data = { "clean": y_pred.tolist() }
+    with open(file_path, 'w') as file:
+        json.dump(data, file)
     log.info('Clean acc: %.4f', acc)
 
     entropy = get_shannon_entropy(y_pred)
@@ -67,8 +71,8 @@ def main():
     log.info('Starting ensemble PGD attack...')
     attack = PGDAttack(ensemble, x_train, y_train)
     x_adv = attack(x_test, y_test, batch_size=batch_size, **config['pgd'])
-    y_pred = classify_ensemble(ensemble, x_adv, num_classes=num_classes)
-    adv_acc = get_acc(y_pred, y_test)
+    y_pred_adv = classify_ensemble(ensemble, x_adv, num_classes=num_classes)
+    adv_acc = get_acc(y_pred_adv, y_test)
 
     log.info('Adv acc: %.4f', adv_acc)
 
@@ -78,6 +82,10 @@ def main():
     log.info('Max entropy: %.4f', torch.max(entropy))
     log.info('Min entropy: %.4f', torch.min(entropy))
 
+    data['adv'] = y_pred_adv.tolist()
+
+    with open(file_path, 'w') as file:
+        json.dump(data, file)
 
 if __name__ == '__main__':
     main()
