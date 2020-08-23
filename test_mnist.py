@@ -109,7 +109,7 @@ def main():
     num_classes = 10
 
     log.info('Building model...')
-    net = BasicModel()
+    net = BatchNormModel()
     net = net.eval().to(device)
 
     # have to handle model loaded from CAT18 differently

@@ -3,7 +3,7 @@
 # meta parameters
 meta:
   exp_id: 1
-  model_name: 'mnist_ates_exp'
+  model_name: 'mnist_exp_at_seed91'
   save_path: './'
   data_path: '~/data/'
   seed: 2019
