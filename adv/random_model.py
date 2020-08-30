@@ -221,6 +221,9 @@ class RandModel(nn.Module):
         outputs = self.basic_net(x)
         if num_draws > 1:
             outputs = outputs.view(num_draws, batch_size, -1).permute(1, 0, 2)
+            sf_logits = torch.nn.Softmax(dim=2)(outputs)
+            avg_sf_per_batch = torch.mean(sf_logits, dim=1)
+            outputs = torch.log(avg_sf_per_batch)
         if return_img:
             return outputs, x
         return outputs
