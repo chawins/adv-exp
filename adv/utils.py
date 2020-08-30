@@ -58,6 +58,12 @@ def get_acc(y_pred, y_test):
     """Compute accuracy based on network output (logits)."""
     return (y_pred.argmax(1) == y_test.to(y_pred.device)).float().mean().item()
 
+def get_shannon_entropy(y_pred):
+    y_pred = F.softmax(y_pred, dim=1)
+    y_pred[y_pred==0]=1
+    entropy = -y_pred.mul(y_pred.log2()).sum(1)
+    print(entropy)
+    return entropy
 
 def quantize(x, levels=16):
     """Quantization function from Qai et al. 2018 (CAT 2018)."""

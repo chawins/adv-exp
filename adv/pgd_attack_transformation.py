@@ -16,7 +16,7 @@ def best_other_class(logits, exclude):
     return other_logits.max(1)[0]
 
 
-class PGDAttack(object):
+class PGDTransformAttack(object):
     """Implement PGD attack with additional options."""
 
     def __init__(self, net, x_train=None, y_train=None):
@@ -60,6 +60,8 @@ class PGDAttack(object):
         label = label.to(self.device)
         batch_size = x_orig.size(0)
         zero = torch.zeros(1, device=self.device) + 1e-6
+
+        num_draws = 3
 
         if p not in ['2', 'inf']:
             raise NotImplementedError('Norm not implemented (only 2 or inf)!')
@@ -108,13 +110,25 @@ class PGDAttack(object):
                 x.requires_grad_()
                 with torch.enable_grad():
                     logits = self.net(x)
-                    if loss_func == 'ce':
-                        loss = F.cross_entropy(logits, label, reduction='sum')
-                    elif loss_func == 'hinge':
-                        other = best_other_class(logits, label.unsqueeze(1))
-                        loss = other - torch.gather(
-                            logits, 1, label.unsqueeze(1)).squeeze()
-                        loss = torch.min(zero, loss).sum()
+                    if num_draws > 1:
+                        sf_logits = torch.nn.Softmax(dim=2)(logits)
+                        avg_sf_per_batch = torch.mean(sf_logits, dim=1)
+                        avg_logits = torch.log(avg_sf_per_batch)
+                        if loss_func == 'ce':
+                            loss = F.cross_entropy(avg_logits, label, reduction='sum')
+                        elif loss_func == 'hinge':
+                            other = best_other_class(avg_logits, label.unsqueeze(1))
+                            loss = other - torch.gather(
+                                avg_logits, 1, label.unsqueeze(1)).squeeze()
+                            loss = torch.min(zero, loss).sum()
+                    else:
+                        if loss_func == 'ce':
+                            loss = F.cross_entropy(logits, label, reduction='sum')
+                        elif loss_func == 'hinge':
+                            other = best_other_class(logits, label.unsqueeze(1))
+                            loss = other - torch.gather(
+                                logits, 1, label.unsqueeze(1)).squeeze()
+                            loss = torch.min(zero, loss).sum()
                 #print(loss)
 
                 with torch.no_grad():
