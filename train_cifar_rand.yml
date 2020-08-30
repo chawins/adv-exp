@@ -77,7 +77,7 @@ rand:
   # transforms: ['drop_pixel']
   # transforms: ['erase']
   # transforms: ['normal']
-  # transforms: ['uniform']
+  transforms: ['uniform', 'normal', 'gamma', 'flip']
   # transforms: ['normal', 'shear', 'scale', 'rotate', 'translate']
   # transforms: ['normal', 'affine']
   # transforms: ['colorjitter']
@@ -89,7 +89,7 @@ rand:
   # transforms: ['hflip', 'drop_pixel', 'colorjitter', 'gamma', 'grayscale']
   # transforms: ['hflip', 'drop_pixel', 'colorjitter']
   # transforms: ['hflip', 'normal', 'colorjitter', 'gamma', 'grayscale', 'drop_pixel', 'affine']
-  transforms: ['medblur', 'hflip', 'normal', 'motionblur', 'colorjitter', 'gamma', 'laplacian', 'grayscale', 'drop_pixel', 'gaussblur', 'affine', 'boxblur', 'sobel']
+  # transforms: ['medblur', 'hflip', 'normal', 'motionblur', 'colorjitter', 'gamma', 'laplacian', 'grayscale', 'drop_pixel', 'gaussblur', 'affine', 'boxblur', 'sobel']
   affine:
     dist: 'uniform'
     alpha: 0.3

@@ -109,7 +109,7 @@ class PGDTransformAttack(object):
                 # compute loss and gradients
                 x.requires_grad_()
                 with torch.enable_grad():
-                    logits = self.net(x)
+                    logits = self.net(x, num_draws=num_draws)
                     if num_draws > 1:
                         sf_logits = torch.nn.Softmax(dim=2)(logits)
                         avg_sf_per_batch = torch.mean(sf_logits, dim=1)

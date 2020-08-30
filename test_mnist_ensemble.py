@@ -30,7 +30,8 @@ def load_ensemble_model(name):
     model_files = os.listdir(path)
     single_models = []
     for file in model_files:
-        net = RandModel()
+        rand_params = config['rand']
+        net = RandModel(BatchNormModel().to(device), rand_params)
         net = net.eval().to(device)
         net.load_state_dict(torch.load(os.path.join(path, file)))
         single_models.append(net)
