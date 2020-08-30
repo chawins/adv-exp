@@ -10,7 +10,7 @@ import torch.nn as nn
 import torch.optim as optim
 import yaml
 
-from adv.adv_model import FGSMModel, PGDModel
+from adv.adv_model import FGSMModel, PGDModel, PGDTransformModel
 from adv.dataset_utils import load_mnist
 from adv.mnist_model import BasicModel, BatchNormModel
 from adv.random_model import RandModel

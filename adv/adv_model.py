@@ -385,13 +385,27 @@ class FGSMModel(nn.Module):
 # =========================================================================== #
 
 
-class PGDTransformModel(PGDModel):
+class PGDTransformModel(nn.Module):
 
     def __init__(self, basic_net, params, num_draws=1):
-        super(PGDModel, self).__init__()
+        super(PGDTransformModel, self).__init__()
         self.basic_net = basic_net
         self.params = params
         self.num_draws = num_draws
+
+    def parse_params(self, params):
+        """Parse given parameters for AT."""
+        p = params['p']
+        step_size = params['step_size']
+        epsilon = params['epsilon']
+        loss_func = params['loss_func']
+        gap = params['gap']
+        clip = params['clip']
+        if params['use_diff_rand_eps']:
+            rand_eps = params['rand_eps']
+        else:
+            rand_eps = epsilon
+        return (p, step_size, epsilon, loss_func, gap, clip, rand_eps)
 
     def cal_gap(self, x, inputs, targets, params=None):
         """Compute Frank-Wolfe optimality gap (see Wang et al. 2018)."""
@@ -434,3 +448,156 @@ class PGDTransformModel(PGDModel):
             fosc = grad_norm - iprod
 
         return fosc
+
+    def _compute_mask(self, x, inputs, logits, targets, grad, params, is_train=True):
+        """Compute mask on samples for early stopping."""
+
+        with torch.no_grad():
+            # compute specified threshold
+            if params['early_stop'] and is_train:
+                softmax = F.softmax(logits.detach(), dim=1)
+                prob = torch.gather(
+                    softmax, 1, targets.unsqueeze(1)).squeeze()
+                other = best_other_class(softmax, targets.unsqueeze(1))
+                mask = ((other - prob) <= params['gap']).float()
+            elif params['use_fosc'] and is_train:
+                batch_size = x.size(0)
+                if params['p'] == 'inf':
+                    # when p = inf, compute l1-norm of grad
+                    grad_norm = grad.view(batch_size, -1).abs().sum(1)
+                elif params['p'] == '2':
+                    grad_norm = grad.view(batch_size, -1).norm(2, 1)
+                iprod = ((x - inputs) * grad).view(batch_size, -1).sum(1)
+                fosc = params['epsilon'] * grad_norm - iprod
+                mask = (fosc >= params['fosc_thres']).float()
+            else:
+                mask = torch.ones(targets.size(0), device=logits.device)
+
+        mask.requires_grad_(False)
+        if x.dim() == 4:
+            return mask.view(-1, 1, 1, 1)
+        return mask.view(-1, 1)
+
+    def forward(self, inputs, targets, adv=True, params=None, cal_gap=False,
+                cal_gap_params=None):
+        """Forward pass for finding adversarial examples for AT.
+        There is also an option to compute Frank-Wolfe optimality gap (see
+        Wang et al. 2018 for more detail).
+
+        Args:
+            inputs (torch.tensor): input samples
+            targets (torch.tensor): ground-truth label
+            adv (bool, optional): whether to use AT
+            params (dict, optional): parameters for AT
+            cal_gap (bool, optional): whether to compute FW gap
+            cal_gap_params (dict, optional): parameters for computing FW gap
+
+        Returns:
+            logits (torch.tensor): logits output by self.basic_net
+        """
+        if not adv:
+            return self.basic_net(inputs)
+        if params is None:
+            params = self.params
+        if params['method'] == 'none':
+            return self.basic_net(inputs)
+
+        p, step_size, epsilon, loss_func, gap, clip, rand_eps = \
+            self.parse_params(params)
+
+        # set network to eval mode to remove some training behavior (e.g.
+        # dropout, batch norm)
+        is_train = self.basic_net.training
+        self.basic_net.eval()
+        x = inputs.clone()
+
+        # compute logits of the clean samples for TRADES
+        if loss_func == 'trades':
+            logits_clean = self.basic_net(inputs.detach())
+            softmax_clean = F.softmax(logits_clean.detach(), dim=1)
+
+        # randomly initialize adversarial examples
+        if params['random_start']:
+            if p == 'inf':
+                x = x + torch.zeros_like(x).uniform_(- rand_eps, rand_eps)
+            elif p == '2':
+                noise = torch.zeros_like(x).normal_(0, 1).view(x.size(0), -1)
+                x += torch.renorm(noise, 2, 0, rand_eps).view(x.size())
+            if clip:
+                x = torch.clamp(x, 0, 1)
+
+        for _ in range(params['num_steps']):
+
+            x.requires_grad_()
+            with torch.enable_grad():
+                # get logits from the current samples
+                logits = self.basic_net(x)
+
+                # compute loss
+                if loss_func == 'ce' or not is_train:
+                    loss = F.cross_entropy(logits, targets, reduction='sum')
+                elif loss_func == 'clipped_ce':
+                    logsoftmax = torch.clamp(
+                        F.log_softmax(logits, dim=1), np.log(gap), 0)
+                    loss = F.nll_loss(logsoftmax, targets, reduction='sum')
+                elif loss_func == 'hinge':
+                    other = best_other_class(logits, targets.unsqueeze(1))
+                    loss = other - \
+                        torch.gather(logits, 1, targets.unsqueeze(1)).squeeze()
+                    # Positive gap creates stronger adv
+                    loss = torch.min(torch.tensor(gap).cuda(), loss).sum()
+                elif loss_func == 'trades':
+                    log_softmax_adv = F.log_softmax(logits, dim=1)
+                    loss = F.kl_div(
+                        log_softmax_adv, softmax_clean, reduction='sum')
+                else:
+                    raise NotImplementedError('loss function not implemented.')
+
+            # compute gradients
+            grad = torch.autograd.grad(loss, x)[0].detach()
+
+            # compute mask for updating perturbation (only used by ATES and
+            # Dynamic AT). <mask> is all ones otherwise.
+            mask = self._compute_mask(
+                x, inputs, logits, targets, grad, params, is_train=is_train)
+            if mask.sum() == 0:
+                break
+
+            # compute updates on the current samples
+            if p == 'inf':
+                x = x.detach() + step_size * mask * torch.sign(grad)
+                # projection step to l-inf ball
+                x = torch.min(torch.max(x, inputs.detach() - epsilon),
+                              inputs.detach() + epsilon)
+            elif p == '2':
+                grad_norm = torch.max(
+                    grad.view(x.size(0), -1).norm(2, 1),
+                    torch.tensor(1e-9).cuda())
+                if inputs.dim() == 4:
+                    delta = step_size * grad / \
+                        grad_norm.view(x.size(0), 1, 1, 1)
+                else:
+                    delta = step_size * grad / grad_norm.view(x.size(0), 1)
+
+                # take PGD step
+                x = x.detach() + mask * delta
+                # project back to epsilon ball (delta is redefined here to
+                # overall perturbation not a single step)
+                delta = torch.renorm((x - inputs.detach()).view(x.size(0), -1),
+                                     2, 0, epsilon).view(x.size())
+                x = inputs.detach() + delta
+            else:
+                raise NotImplementedError('specified lp-norm not implemented.')
+            # clip samples to [0, 1] if specified
+            if clip:
+                x = torch.clamp(x, 0, 1)
+
+        # only used for computing FOSC
+        if cal_gap:
+            fosc = self.cal_gap(x, inputs, targets, params=cal_gap_params)
+            self.basic_net.train(is_train)
+            return x, fosc, (x - inputs).view(x.size(0), -1).abs().max(1)[0]
+
+        # set the network to its original state (train or eval)
+        self.basic_net.train(is_train)
+        return self.basic_net
