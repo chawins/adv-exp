@@ -532,6 +532,10 @@ class PGDTransformModel(nn.Module):
             with torch.enable_grad():
                 # get logits from the current samples
                 logits = self.basic_net(x)
+                if self.num_draws > 1:
+                    sf_logits = torch.nn.Softmax(dim=2)(logits)
+                    avg_sf_per_batch = torch.mean(sf_logits, dim=1)
+                    logits = torch.log(avg_sf_per_batch)
 
                 # compute loss
                 if loss_func == 'ce' or not is_train:
