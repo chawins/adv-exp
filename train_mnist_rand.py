@@ -146,7 +146,7 @@ def main():
 
     # Wrap the neural network with module that generates adversarial examples
     if config['at']['method'] == 'pgd' or config['at']['method'] == 'none':
-        net = PGDModel(basic_net, config['at'])
+        net = PGDTransformModel(basic_net, config['at'], config['rand']['num_draws'])
     elif config['at']['method'] == 'fgsm':
         net = FGSMModel(basic_net, config['at'])
     else:

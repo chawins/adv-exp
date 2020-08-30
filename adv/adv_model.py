@@ -383,3 +383,54 @@ class FGSMModel(nn.Module):
 
 
 # =========================================================================== #
+
+
+class PGDTransformModel(PGDModel):
+
+    def __init__(self, basic_net, params, num_draws=1):
+        super(PGDModel, self).__init__()
+        self.basic_net = basic_net
+        self.params = params
+        self.num_draws = num_draws
+
+    def cal_gap(self, x, inputs, targets, params=None):
+        """Compute Frank-Wolfe optimality gap (see Wang et al. 2018)."""
+        if not params:
+            params = self.params
+        p, _, epsilon, loss_func, _, _, _ = self.parse_params(params)
+        self.basic_net.eval()
+        x.requires_grad_()
+        # calculate loss
+        with torch.enable_grad():
+            logits = self.basic_net(x)
+            if self.num_draws > 1:
+                sf_logits = torch.nn.Softmax(dim=2)(logits)
+                avg_sf_per_batch = torch.mean(sf_logits, dim=1)
+                avg_logits = torch.log(avg_sf_per_batch)
+                if loss_func == 'ce':
+                    loss = F.cross_entropy(avg_logits, label, reduction='sum')
+                elif loss_func == 'hinge':
+                    other = best_other_class(avg_logits, label.unsqueeze(1))
+                    loss = other - torch.gather(
+                        avg_logits, 1, label.unsqueeze(1)).squeeze()
+                    loss = torch.min(zero, loss).sum()
+            else:
+                if loss_func == 'ce':
+                    loss = F.cross_entropy(logits, targets, reduction='sum')
+                elif loss_func == 'hinge':
+                    other = best_other_class(logits, targets.unsqueeze(1))
+                    loss = other - \
+                        torch.gather(logits, 1, targets.unsqueeze(1)).squeeze()
+                    # positive gap creates stronger adv
+                    loss = torch.min(torch.zeros_like(loss), loss).sum()
+        grad = torch.autograd.grad(loss, x)[0].detach().view(x.size(0), -1)
+
+        with torch.no_grad():
+            if p == 'inf':
+                grad_norm = epsilon * grad.abs().sum(1)
+            elif p == '2':
+                grad_norm = epsilon * grad.norm(2, 1)
+            iprod = ((x - inputs).view(x.size(0), -1) * grad).sum(1)
+            fosc = grad_norm - iprod
+
+        return fosc
