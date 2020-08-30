@@ -14,6 +14,7 @@ from adv.random_model import RandModel
 from adv.mnist_model import BasicModel, BatchNormModel, EnsembleModel
 from adv.utils import get_logger, trades_loss, classify, classify_ensemble, get_acc, get_shannon_entropy, get_logger, quantize
 from adv.pgd_attack import PGDAttack
+from adv.pgd_attack_transformation import PGDTransformAttack
 
 with open('test_mnist.yml', 'r') as stream:
     config = yaml.safe_load(stream)
@@ -63,7 +64,7 @@ def main():
     log.info('Min entropy: %.4f', torch.min(entropy))
 
     log.info('Starting ensemble PGD attack...')
-    attack = PGDAttack(ensemble, x_train, y_train)
+    attack = PGDTransformAttack(ensemble, x_train, y_train)
     x_adv = attack(x_test[:num_test_samples], y_test[:num_test_samples], batch_size=batch_size, **config['pgd'])
     y_pred = classify_ensemble(ensemble, x_adv, num_classes=num_classes)
 

@@ -16,7 +16,7 @@ def best_other_class(logits, exclude):
     return other_logits.max(1)[0]
 
 
-class PGDAttack(object):
+class PGDTransformAttack(object):
     """Implement PGD attack with additional options."""
 
     def __init__(self, net, x_train=None, y_train=None):
