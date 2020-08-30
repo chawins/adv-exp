@@ -208,6 +208,7 @@ class RandModel(nn.Module):
             #     for i, x_cur in enumerate(x):
             #         x[i] = motionblur(x_cur)
             else:
+                print(tf)
                 raise NotImplementedError(
                     'Specified transformation is not implemented.')
 

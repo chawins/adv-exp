@@ -31,3 +31,86 @@ pgd:
   epsilon: 0.3
   num_steps: 100
   step_size: 0.01
+
+rand:
+  seed: null
+  clip: null
+  # clip: [-1., 1.]
+  # clip: [0., 1.]
+  num_draws: 1
+  # transforms: ['drop_pixel']
+  # transforms: ['erase']
+  # transforms: ['normal']
+  transforms: ['uniform', 'normal', 'gamma', 'hflip']
+  # transforms: ['normal', 'shear', 'scale', 'rotate', 'translate']
+  # transforms: ['normal', 'affine']
+  # transforms: ['colorjitter']
+  # transforms: ['colorjitter', 'motionblur', 'erase', 'shear', 'scale', 'rotate', 'translate']
+  # transforms: ['motionblur']
+  # transforms: ['rotate', 'motionblur', 'translate', 'colorjitter', 'shear', 'scale']
+  # transforms: ['drop_pixel', 'rotate', 'translate', 'colorjitter', 'shear', 'scale']
+  # transforms: ['hflip', 'drop_pixel', 'rotate', 'translate', 'colorjitter', 'shear', 'gamma', 'scale', 'grayscale']
+  # transforms: ['hflip', 'drop_pixel', 'colorjitter', 'gamma', 'grayscale']
+  # transforms: ['hflip', 'drop_pixel', 'colorjitter']
+  # transforms: ['hflip', 'normal', 'colorjitter', 'gamma', 'grayscale', 'drop_pixel', 'affine']
+  # transforms: ['medblur', 'hflip', 'normal', 'motionblur', 'colorjitter', 'gamma', 'laplacian', 'grayscale', 'drop_pixel', 'gaussblur', 'affine', 'boxblur', 'sobel']
+  affine:
+    dist: 'uniform'
+    alpha: 0.3
+  boxblur:
+    p: 0.2
+    kernel_size: 3
+  colorjitter:
+    alpha: 0.5
+  drop:
+    p: 0.3
+  drop_pixel:
+    p: 0.4
+  erase:
+    # scale: [0.1, 0.2]    # scale of area
+    scale: [0.0000001, 0.5]
+    ratio: [0.5, 2.0]    # aspect ratio of the erasing box
+  gamma:
+    dist: 'uniform'
+    alpha: 0.3
+  gaussblur:
+    p: 0.2
+    kernel_size: 3
+    sigma: 1
+  grayscale:
+    p: 0.2
+  hflip:
+    p: 0.5
+  laplacian:
+    p: 0.2
+    kernel_size: 3
+  medblur:
+    p: 0.2
+    kernel_size: 3
+  motionblur:
+    p: 0.2
+    kernel_size: 3
+    angle: 90.0
+    direction: 1.0
+  normal:
+    mean: 0.0
+    std: 0.2
+    # clip: [0., 1.]
+    clip: null
+  rotate:
+    dist: 'uniform'
+    alpha: 30
+  scale:
+    dist: 'uniform'
+    alpha: 0.3
+  shear:
+    dist: 'uniform'
+    alpha: 0.3
+  sobel:
+    p: 0.2
+  translate:
+    dist: 'uniform'
+    alpha: 0.3
+  uniform:
+    range: [-0.2, 0.2]
+

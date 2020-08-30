@@ -3,7 +3,7 @@
 # ============================= meta parameters ============================= #
 meta:
   exp_id: 3             # experiment id
-  model_name: 'mnist_rand_82'      # model name. If null, automatically generate it.
+  model_name: 'mnist_rand_71'      # model name. If null, automatically generate it.
   save_path: './random_models/'       # path to save model weights
   data_path: '~/data/'  # path to dataset
   seed: 82            # set random seed
@@ -89,7 +89,7 @@ rand:
   clip: [0, 1]
   # clip: [-1., 1.]
   # clip: [0., 1.]
-  num_draws: 1
+  num_draws: 3
   # transforms: ['drop_pixel']
   # transforms: ['erase']
   # transforms: ['normal']
