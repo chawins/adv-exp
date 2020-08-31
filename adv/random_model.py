@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from kornia.augmentation import (RandomErasing, RandomGrayscale,
                                  RandomHorizontalFlip, RandomMotionBlur)
-from kornia.color.adjust import (adjust_brightness, adjust_contrast,
+from kornia.enhance import (adjust_brightness, adjust_contrast,
                                  adjust_gamma, adjust_hue, adjust_saturation)
 # from kornia.filters.blur import (box_blur, gaussian_blur2d, median_blur,
 #                                  motion_blur)
