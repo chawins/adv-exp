@@ -85,7 +85,7 @@ at:
 
 # ===================== parameters for random transform ===================== #
 rand:
-  seed: 202
+  seed: null
   clip: [0, 1]
   # clip: [-1., 1.]
   # clip: [0., 1.]
