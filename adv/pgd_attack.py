@@ -115,7 +115,6 @@ class PGDAttack(object):
                         loss = other - torch.gather(
                             logits, 1, label.unsqueeze(1)).squeeze()
                         loss = torch.min(zero, loss).sum()
-                #print(loss)
 
                 with torch.no_grad():
                     grad = torch.autograd.grad(loss, x)[0].detach()

@@ -12,7 +12,8 @@ import json
 
 from adv.dataset_utils import load_mnist_all
 from adv.mnist_model import BasicModel, BatchNormModel, EnsembleModel
-from adv.utils import get_logger, trades_loss, classify, classify_ensemble, get_acc, get_shannon_entropy, get_logger, quantize
+from adv.random_model import RandModel
+from adv.utils import get_logger, trades_loss, classify, classify_ensemble, classify_ensemble_rand, get_acc, get_shannon_entropy, get_logger, quantize
 from adv.pgd_attack import PGDAttack
 
 with open('test_mnist_rand.yml', 'r') as stream:
@@ -32,7 +33,7 @@ def load_ensemble_model(name):
     for file in model_files:
         net = BatchNormModel()
         net = net.eval().to(device)
-        net = RandModel(net, rannd_params)
+        net = RandModel(net, rand_params)
         net.load_state_dict(torch.load(os.path.join(path, file)))
         single_models.append(net)
     return EnsembleModel(single_models).to(device)
@@ -50,15 +51,15 @@ def main():
     num_test_samples = config['test']['num_test_samples']
     x_test, y_test = x_test[:num_test_samples], y_test[:num_test_samples]
     if config['pgd']['quant']:
-        y_pred = classify_ensemble(ensemble, quantize(
-            x_test), num_classes=num_classes)
+        y_pred = classify_ensemble_rand(ensemble, quantize(
+            x_test), num_classes=num_classes, num_draws=20)
     else:
-        y_pred = classify_ensemble(
-            ensemble, x_test, num_classes=num_classes)
+        y_pred = classify_ensemble_rand(
+            ensemble, x_test, num_classes=num_classes, num_draws=20)
 
     acc = get_acc(y_pred, y_test)
 
-    file_path = './test_data/4transforms.json'
+    file_path = './test_data/gamma.json'
     data = { "clean": y_pred.tolist() }
     with open(file_path, 'w') as file:
         json.dump(data, file)
@@ -73,7 +74,7 @@ def main():
     log.info('Starting ensemble PGD attack...')
     attack = PGDAttack(ensemble, x_train, y_train)
     x_adv = attack(x_test, y_test, batch_size=batch_size, **config['pgd'])
-    y_pred_adv = classify_ensemble(ensemble, x_adv, num_classes=num_classes)
+    y_pred_adv = classify_ensemble_rand(ensemble, x_adv, num_classes=num_classes, num_draws=20)
     adv_acc = get_acc(y_pred_adv, y_test)
 
     log.info('Adv acc: %.4f', adv_acc)

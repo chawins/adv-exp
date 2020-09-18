@@ -33,15 +33,15 @@ pgd:
   step_size: 0.01
 
 rand:
-  seed: 202
+  seed: null
   clip: [0, 1]
   # clip: [-1., 1.]
   # clip: [0., 1.]
-  num_draws: 3
+  num_draws: 5
   # transforms: ['drop_pixel']
   # transforms: ['erase']
-  # transforms: ['normal']
-  transforms: ['uniform', 'hflip', 'gamma', 'normal']
+  transforms: ['gamma']
+  # transforms: ['uniform', 'hflip', 'gamma', 'normal']
   # transforms: ['normal', 'shear', 'scale', 'rotate', 'translate']
   # transforms: ['normal', 'affine']
   # transforms: ['colorjitter']
