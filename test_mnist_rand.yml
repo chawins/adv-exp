@@ -40,8 +40,8 @@ rand:
   num_draws: 5
   # transforms: ['drop_pixel']
   # transforms: ['erase']
-  transforms: ['gamma']
-  # transforms: ['uniform', 'hflip', 'gamma', 'normal']
+  # transforms: ['gamma']
+  transforms: ['uniform', 'hflip', 'gamma', 'normal']
   # transforms: ['normal', 'shear', 'scale', 'rotate', 'translate']
   # transforms: ['normal', 'affine']
   # transforms: ['colorjitter']

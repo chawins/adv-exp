@@ -30,12 +30,19 @@ def load_ensemble_model(name):
     path = os.path.join('random_models/saved_models', name)
     model_files = os.listdir(path)
     single_models = []
+    transforms_orig = rand_params['transforms']
+    candidate_single_transforms = ['uniform', 'hflip', 'gamma', 'normal']
     for file in model_files:
         net = BatchNormModel()
         net = net.eval().to(device)
+        for trans in candidate_single_transforms:
+            if trans in file:
+                print(trans)
+                rand_params['transforms'] = [trans]
         net = RandModel(net, rand_params)
         net.load_state_dict(torch.load(os.path.join(path, file)))
         single_models.append(net)
+    rand_params['transforms'] = transforms_orig
     return EnsembleModel(single_models).to(device)
 
 def main():
@@ -57,38 +64,39 @@ def main():
         y_pred = classify_ensemble_rand(
             ensemble, x_test, num_classes=num_classes, num_draws=20)
 
-    acc = get_acc(y_pred, y_test)
+    # acc = get_acc(y_pred, y_test)
 
-    file_path = './test_data/gamma.json'
-    data = { "clean": y_pred.tolist() }
+    file_path = './test_data/uniform.json'
+    data = { "clean": y_pred }
     with open(file_path, 'w') as file:
         json.dump(data, file)
-    log.info('Clean acc: %.4f', acc)
+    # log.info('Clean acc: %.4f', acc)
 
-    entropy = get_shannon_entropy(y_pred)
-    log.info('Average entropy: %.4f', torch.mean(entropy))
-    log.info('Median entropy: %.4f', torch.median(entropy))
-    log.info('Max entropy: %.4f', torch.max(entropy))
-    log.info('Min entropy: %.4f', torch.min(entropy))
+    # entropy = get_shannon_entropy(y_pred)
+    # log.info('Average entropy: %.4f', torch.mean(entropy))
+    # log.info('Median entropy: %.4f', torch.median(entropy))
+    # log.info('Max entropy: %.4f', torch.max(entropy))
+    # log.info('Min entropy: %.4f', torch.min(entropy))
 
     log.info('Starting ensemble PGD attack...')
     attack = PGDAttack(ensemble, x_train, y_train)
     x_adv = attack(x_test, y_test, batch_size=batch_size, **config['pgd'])
     y_pred_adv = classify_ensemble_rand(ensemble, x_adv, num_classes=num_classes, num_draws=20)
-    adv_acc = get_acc(y_pred_adv, y_test)
+    # adv_acc = get_acc(y_pred_adv, y_test)
 
-    log.info('Adv acc: %.4f', adv_acc)
+    # log.info('Adv acc: %.4f', adv_acc)
 
-    entropy = get_shannon_entropy(y_pred)
-    log.info('Average entropy: %.4f', torch.mean(entropy))
-    log.info('Median entropy: %.4f', torch.median(entropy))
-    log.info('Max entropy: %.4f', torch.max(entropy))
-    log.info('Min entropy: %.4f', torch.min(entropy))
+    # entropy = get_shannon_entropy(y_pred)
+    # log.info('Average entropy: %.4f', torch.mean(entropy))
+    # log.info('Median entropy: %.4f', torch.median(entropy))
+    # log.info('Max entropy: %.4f', torch.max(entropy))
+    # log.info('Min entropy: %.4f', torch.min(entropy))
 
-    data['adv'] = y_pred_adv.tolist()
+    data['adv'] = y_pred_adv
 
     with open(file_path, 'w') as file:
         json.dump(data, file)
+    log.info('Dump finished')
 
 if __name__ == '__main__':
     main()

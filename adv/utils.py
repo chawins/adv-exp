@@ -43,9 +43,9 @@ def classify_ensemble(ensemble, x, batch_size=200, num_classes=10, method='aggre
                 begin = i * batch_size
                 end = (i + 1) * batch_size
                 y_pred[begin:end] = net(x[begin:end].to('cuda'))
-            y_preds.append(y_pred)
+            y_preds.append(y_pred.tolist())
         if method == 'aggregate_vote':
-            return np.sum(y_preds, axis=0)
+            return y_preds
         else:
             raise NotImplementedError
 
@@ -58,9 +58,9 @@ def classify_ensemble_rand(ensemble, x, batch_size=200, num_classes=10, method='
                 begin = i * batch_size
                 end = (i + 1) * batch_size
                 y_pred[begin:end] = net(x[begin:end].to('cuda'), num_draws=num_draws)
-            y_preds.append(y_pred)
+            y_preds.append(y_pred.tolist())
         if method == 'aggregate_vote':
-            return np.sum(y_preds, axis=0)
+            return y_preds
         else:
             raise NotImplementedError
 
