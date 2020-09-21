@@ -42,9 +42,9 @@ def classify_ensemble(ensemble, x, batch_size=200, num_classes=10, method='aggre
                 begin = i * batch_size
                 end = (i + 1) * batch_size
                 y_pred[begin:end] = net(x[begin:end].to('cuda'))
-            y_preds.append(y_pred)
+            y_preds.append(y_pred.tolist())
         if method == 'aggregate_vote':
-            return np.sum(y_preds, axis=0)
+            return y_pred
         else:
             raise NotImplementedError
 
