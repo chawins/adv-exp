@@ -66,7 +66,7 @@ def main():
 
     # acc = get_acc(y_pred, y_test)
 
-    file_path = './test_data/uniform.json'
+    file_path = './test_data/gamma.json'
     data = { "clean": y_pred }
     with open(file_path, 'w') as file:
         json.dump(data, file)
