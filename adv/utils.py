@@ -44,7 +44,7 @@ def classify_ensemble(ensemble, x, batch_size=200, num_classes=10, method='aggre
                 y_pred[begin:end] = net(x[begin:end].to('cuda'))
             y_preds.append(y_pred.tolist())
         if method == 'aggregate_vote':
-            return y_pred
+            return y_preds
         else:
             raise NotImplementedError
 
