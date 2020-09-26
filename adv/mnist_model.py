@@ -94,7 +94,7 @@ class EnsembleModel(nn.Module):
         y_pred = torch.zeros((x.size(0), num_classes)).to('cuda')
         for model in self.models:
             y_pred += self.softmax(model(x))
-        return torch.log(y_pred / self.n)
+        return torch.log(torch.clamp(y_pred / self.n, min=1e-10))
 
 class BasicModelV2(nn.Module):
 
