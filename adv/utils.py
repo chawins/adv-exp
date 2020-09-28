@@ -52,15 +52,17 @@ def classify_ensemble(ensemble, x, batch_size=200, num_classes=10, method='aggre
 def classify_ensemble_rand(ensemble, x, batch_size=200, num_classes=10, method='aggregate_vote', num_draws=None):
     with torch.no_grad():
         y_preds = []
+        y_preds_list = []
         for net in ensemble.models:
             y_pred = torch.zeros((x.size(0), num_classes)).to('cuda')
             for i in range(int(np.ceil(x.size(0) / batch_size))):
                 begin = i * batch_size
                 end = (i + 1) * batch_size
                 y_pred[begin:end] = net(x[begin:end].to('cuda'), num_draws=num_draws)
-            y_preds.append(y_pred.tolist())
+            y_preds_list.append(y_pred.tolist())
+            y_preds.append(y_pred)
         if method == 'aggregate_vote':
-            return y_preds
+            return y_preds_list, np.sum(y_preds, axis=0).to('cuda')
         else:
             raise NotImplementedError
 
